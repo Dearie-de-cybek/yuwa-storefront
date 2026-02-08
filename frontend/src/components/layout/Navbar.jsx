@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X, Search, User, ChevronDown } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-
+import { useStore } from '../../store/useStore';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const location = useLocation();
+  const { toggleCartDrawer, cart } = useStore();
+  const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   
   useEffect(() => {
@@ -45,7 +47,7 @@ export default function Navbar() {
         className={`fixed w-full z-50 transition-all duration-500 ease-out 
         ${scrolled || isOpen ? 'bg-secondary/95 backdrop-blur-md border-b border-border py-4' : 'bg-transparent py-6'}`}
       >
-        <div className="max-w-[1440px] mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-360 mx-auto px-6 flex items-center justify-between">
           
           {/* DESKTOP LEFT - Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
@@ -104,9 +106,15 @@ export default function Navbar() {
             <Link to="/account" className="hidden md:block hover:text-accent transition-colors">
               <User strokeWidth={1.5} size={22} />
             </Link>
-            <button className="relative hover:text-accent transition-colors">
+            <button 
+            onClick={toggleCartDrawer}
+            className="relative hover:text-accent transition-colors">
               <ShoppingBag strokeWidth={1.5} size={22} />
-              <span className="absolute -top-1 -right-2 bg-accent text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">0</span>
+              {cartCount > 0 && (
+      <span className="absolute -top-1 -right-2 bg-accent text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+        {cartCount}
+      </span>
+    )}
             </button>
           </div>
         </div>
