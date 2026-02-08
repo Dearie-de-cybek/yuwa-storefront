@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import CustomLanding from './pages/custom/CustomLanding'; 
 import BookConsultation from './pages/custom/BookConsultation';
+import Shop from './pages/shop/Shop';
 
 export default function App() {
   return (
@@ -21,7 +22,8 @@ export default function App() {
             {/* The New Custom Creations Route */}
             <Route path="/custom" element={<CustomLanding />} />
             <Route path="/book-consultation" element={<BookConsultation />} />
-            
+            <Route path="/shop/ready-to-wear" element={<Shop />} />
+            <Route path="/shop/bubus" element={<Shop />} />
           </Routes>
         </main>
       </div>
