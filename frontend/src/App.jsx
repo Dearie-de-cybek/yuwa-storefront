@@ -1,5 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
+import CustomLanding from './pages/custom/CustomLanding'; 
+import BookConsultation from './pages/custom/BookConsultation';
 
 export default function App() {
   return (
@@ -7,18 +9,19 @@ export default function App() {
       <div className="min-h-screen bg-secondary text-primary font-sans">
         <Navbar />
         
-        {/* Main Content Area */}
-        <main className="pt-32 px-6">
+        <main>
           <Routes>
             <Route path="/" element={
-              <div className="text-center mt-20">
-                <h1 className="text-4xl font-serif mb-4">Welcome to YUWA</h1>
-                <p className="text-lg text-muted">Luxury African Fashion</p>
-                <div className="mt-8 p-4 border border-accent inline-block text-accent">
-                  If you see this, Tailwind is working.
-                </div>
+              <div className="pt-40 text-center">
+                <h1 className="text-4xl font-serif">Home Page Placeholder</h1>
+                <p className="mt-4">Go to "Custom Creations" in the menu.</p>
               </div>
             } />
+            
+            {/* The New Custom Creations Route */}
+            <Route path="/custom" element={<CustomLanding />} />
+            <Route path="/book-consultation" element={<BookConsultation />} />
+            
           </Routes>
         </main>
       </div>
