@@ -9,13 +9,11 @@
     @apply bg-secondary text-primary font-sans antialiased;
   }
   
-  /* Luxury Typography Hierarchy */
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif font-normal;
   }
 }
 
-/* Hide scrollbar for sleek horizontal scrolling */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
