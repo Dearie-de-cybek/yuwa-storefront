@@ -11,7 +11,7 @@ export default function CartDrawer() {
     isCartOpen, 
     closeCartDrawer, 
     removeFromCart, 
-    updateQuantity 
+    updateQuantity,
   } = useStore();
 
   // Calculate Subtotal

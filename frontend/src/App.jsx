@@ -4,6 +4,7 @@ import CustomLanding from './pages/custom/CustomLanding';
 import BookConsultation from './pages/custom/BookConsultation';
 import Shop from './pages/shop/Shop';
 import CartDrawer from './components/checkout/CartDrawer';
+import ProductDetails from './pages/product/ProductDetails';
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
             <Route path="/book-consultation" element={<BookConsultation />} />
             <Route path="/shop/ready-to-wear" element={<Shop />} />
             <Route path="/shop/bubus" element={<Shop />} />
+            <Route path="/product/:id" element={<ProductDetails />} />
           </Routes>
         </main>
       </div>
