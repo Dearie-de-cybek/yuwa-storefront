@@ -47,6 +47,16 @@ export const useStore = create(
         };
       }),
 
+      updateQuantity: (productId, variantId, delta) => set((state) => ({
+  cart: state.cart.map(item => {
+    if (item.id === productId && item.variant.id === variantId) {
+      const newQuantity = item.quantity + delta;
+      return { ...item, quantity: Math.max(1, newQuantity) }; 
+    }
+    return item;
+  })
+})),
+
       toggleCartDrawer: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
     }),
     {
