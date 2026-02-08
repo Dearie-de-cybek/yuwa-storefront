@@ -5,6 +5,7 @@ import BookConsultation from './pages/custom/BookConsultation';
 import Shop from './pages/shop/Shop';
 import CartDrawer from './components/checkout/CartDrawer';
 import ProductDetails from './pages/product/ProductDetails';
+import Checkout from './pages/checkout/Checkout';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="/shop/ready-to-wear" element={<Shop />} />
             <Route path="/shop/bubus" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetails />} />
+            <Route path="/checkout" element={<Checkout />} />
           </Routes>
         </main>
       </div>
