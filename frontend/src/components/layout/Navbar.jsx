@@ -3,8 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, Menu, X, Search, User, ChevronDown } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
+import SearchOverlay from './SearchOverlay';
+
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
   const location = useLocation();
@@ -100,9 +104,12 @@ export default function Navbar() {
 
           {/* RIGHT - Utilities */}
           <div className="flex items-center space-x-6 text-primary">
-            <button className="hidden md:block hover:text-accent transition-colors">
-              <Search strokeWidth={1.5} size={22} />
-            </button>
+           <button 
+            onClick={() => setIsSearchOpen(true)} 
+            className="hidden md:block hover:text-accent transition-colors"
+          >
+            <Search strokeWidth={1.5} size={22} />
+          </button>
             <Link to="/account" className="hidden md:block hover:text-accent transition-colors">
               <User strokeWidth={1.5} size={22} />
             </Link>
@@ -196,6 +203,8 @@ export default function Navbar() {
                   </div>
                 ))}
               </div>
+
+              <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
               <div className="mt-16 pt-8 border-t border-border">
                 <Link to="/account" className="flex items-center space-x-3 text-primary mb-4">

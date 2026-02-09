@@ -7,6 +7,8 @@ import { Toaster } from 'sonner';
 import CartDrawer from './components/checkout/CartDrawer';
 import ProductDetails from './pages/product/ProductDetails';
 import Checkout from './pages/checkout/Checkout';
+import HomePage from './pages/home/HomePage'; 
+import Footer from './components/layout/Footer';
 
 export default function App() {
   return (
@@ -18,14 +20,9 @@ export default function App() {
         
         <main>
           <Routes>
-            <Route path="/" element={
-              <div className="pt-40 text-center">
-                <h1 className="text-4xl font-serif">Home Page Placeholder</h1>
-                <p className="mt-4">Go to "Custom Creations" in the menu.</p>
-              </div>
-            } />
+            <Route path="/" element={<HomePage />} />
             
-            {/* The New Custom Creations Route */}
+            {/* The Custom Creations Route */}
             <Route path="/custom" element={<CustomLanding />} />
             <Route path="/book-consultation" element={<BookConsultation />} />
             <Route path="/shop/ready-to-wear" element={<Shop />} />
@@ -34,6 +31,8 @@ export default function App() {
             <Route path="/checkout" element={<Checkout />} />
           </Routes>
         </main>
+
+        <Footer />
       </div>
     </Router>
   )

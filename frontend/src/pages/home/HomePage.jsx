@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
+import aboutImage from '../../assets/images/about.jpg';
 
 // Re-use the Product Card for "The Edit" section
 import ProductCard from '../../components/product/ProductCard';
@@ -112,7 +113,7 @@ export default function HomePage() {
           {/* Big Item 1 */}
           <Link to="/shop/bubus" className="relative group overflow-hidden h-full">
             <img 
-              src="https://images.unsplash.com/photo-1605218427368-35b80a35e236?q=80&w=1000&auto=format&fit=crop" 
+              src="https://unsplash.com/photos/woman-in-ornate-blue-dress-and-headwrap-p5ewDl5mVWc?q=80&w=1000&auto=format&fit=crop" 
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
@@ -193,8 +194,9 @@ export default function HomePage() {
         <div className="relative order-1 md:order-2 h-[600px] bg-gray-200 overflow-hidden">
           <motion.img 
             style={{ y }}
-            src="https://images.unsplash.com/photo-1531384441138-2736e62e0919?q=80&w=1000&auto=format&fit=crop" 
+             src={aboutImage}
             className="w-full h-[120%] object-cover"
+            alt="About YUWA"
           />
         </div>
       </section>
