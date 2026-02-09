@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Plus, Minus, ArrowRight, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, ArrowRight, ShoppingBag, Trash2 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { Link } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ export default function CartDrawer() {
     isCartOpen, 
     closeCartDrawer, 
     removeFromCart, 
-    updateQuantity,
+    updateQuantity 
   } = useStore();
 
   // Calculate Subtotal
@@ -81,20 +81,38 @@ export default function CartDrawer() {
                 cart.map((item) => (
                   <div key={`${item.id}-${item.variant.id}`} className="flex gap-4 group">
                     {/* Image */}
-                    <div className="w-24 h-32 bg-secondary flex-shrink-0 overflow-hidden relative">
+                    <Link 
+                      to={`/product/${item.id}`} 
+                      onClick={closeCartDrawer}
+                      className="w-24 h-32 bg-secondary flex-shrink-0 overflow-hidden relative cursor-pointer"
+                    >
                       <img src={item.variant.image} alt={item.name} className="w-full h-full object-cover" />
-                    </div>
+                    </Link>
 
                     {/* Details */}
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
                         <div className="flex justify-between items-start">
-                          <h3 className="font-serif text-base leading-tight pr-4">{item.name}</h3>
+                          <Link 
+                            to={`/product/${item.id}`}
+                            onClick={closeCartDrawer} 
+                            className="font-serif text-base leading-tight pr-4 hover:text-accent transition-colors"
+                          >
+                            {item.name}
+                          </Link>
                           <p className="font-medium text-sm">${(item.price * item.quantity).toFixed(2)}</p>
                         </div>
-                        <p className="text-xs text-muted mt-1 uppercase tracking-wide">
-                          {item.variant.colorName}
-                        </p>
+                        
+                        {/* VARIANT DETAILS (Size & Color) */}
+                        <div className="text-xs text-muted mt-2 space-y-1">
+                          <p className="flex items-center gap-2">
+                            <span className="w-3 h-3 rounded-full border border-gray-300" style={{ backgroundColor: item.variant.colorName === 'Emerald' ? '#046c4e' : '#C15B28' }}></span>
+                            {item.variant.colorName}
+                          </p>
+                          <p className="uppercase tracking-wide font-medium">
+                            Size: <span className="text-primary">{item.variant.size}</span>
+                          </p>
+                        </div>
                       </div>
 
                       {/* Controls */}
@@ -103,7 +121,7 @@ export default function CartDrawer() {
                         <div className="flex items-center border border-border rounded-sm">
                           <button 
                             onClick={() => updateQuantity(item.id, item.variant.id, -1)}
-                            className="p-2 hover:bg-secondary hover:text-accent transition-colors cursor-pointer"
+                            className="p-2 hover:bg-secondary hover:text-accent transition-colors cursor-pointer disabled:opacity-50"
                             disabled={item.quantity <= 1}
                           >
                             <Minus size={14} />
@@ -120,9 +138,9 @@ export default function CartDrawer() {
                         {/* Remove Button */}
                         <button 
                           onClick={() => removeFromCart(item.id, item.variant.id)}
-                          className="text-muted hover:text-red-500 transition-colors text-xs underline decoration-dotted underline-offset-4 cursor-pointer hover:decoration-solid"
+                          className="text-muted hover:text-red-500 transition-colors text-xs flex items-center gap-1 cursor-pointer group"
                         >
-                          Remove
+                          <Trash2 size={14} className="group-hover:stroke-red-500" /> Remove
                         </button>
                       </div>
                     </div>

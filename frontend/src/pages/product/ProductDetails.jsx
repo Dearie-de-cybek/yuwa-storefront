@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ChevronDown, ChevronUp, Ruler, Truck, ArrowLeft } from 'lucide-react';
+import { Star, ChevronDown, ChevronUp, Ruler, Truck, ArrowLeft, AlertCircle } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
 // Components
@@ -27,7 +27,6 @@ const PRODUCT = {
     ]}
   ],
   sizes: ["XS", "S", "M", "L", "XL", "XXL"],
-  // NEW: Extended Accordion Details
   accordions: [
     { title: "Product Details", content: "• 100% Premium Silk\n• Hand-dyed in Lagos, Nigeria\n• Hidden inner belt for adjustable fit\n• Maxi length (60 inches)\n• Side pockets included" },
     { title: "Size & Fit", content: "• Model is 5'9\" wearing size S\n• Loose, flowing fit\n• Fits true to size, but if between sizes, you can size down due to the loose cut." },
@@ -42,10 +41,11 @@ export default function ProductDetails() {
   const reviewsRef = useRef(null);
 
   const [selectedColor, setSelectedColor] = useState(PRODUCT.colors[0]);
-  const [selectedSize, setSelectedSize] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null); // Default to NULL to force selection
   const [activeAccordion, setActiveAccordion] = useState(null);
   const [error, setError] = useState('');
-  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false); // Modal State
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [shake, setShake] = useState(false); // Animation state
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
@@ -55,16 +55,21 @@ export default function ProductDetails() {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      setError('Please select a size.');
+      setError('Please select a size to continue.');
+      setShake(true); // Trigger shake animation
+      setTimeout(() => setShake(false), 500); // Reset animation
       return;
     }
+
     setError('');
+    
+    // Add to Cart with specific details
     addToCart({
       id: PRODUCT.id,
       name: PRODUCT.name,
       price: PRODUCT.price,
       variant: {
-        id: selectedColor.name + selectedSize,
+        id: `${selectedColor.name}-${selectedSize}`, // Unique ID: "Emerald-M"
         colorName: selectedColor.name,
         size: selectedSize,
         image: selectedColor.images[0]
@@ -114,7 +119,6 @@ export default function ProductDetails() {
               <p className="text-xl font-medium">${PRODUCT.price}</p>
             </div>
             
-            {/* Clickable Star Rating */}
             <button onClick={scrollToReviews} className="flex items-center gap-2 text-sm text-muted mb-6 group">
               <div className="flex text-accent">
                 {[1,2,3,4,5].map(s => <Star key={s} size={14} fill="currentColor" />)}
@@ -148,9 +152,10 @@ export default function ProductDetails() {
           {/* Size Selector */}
           <div>
             <div className="flex justify-between items-center mb-3">
-              <span className="text-xs font-bold uppercase tracking-widest text-muted">Size</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-muted">
+                Size <span className="text-red-500">*</span>
+              </span>
               
-              {/* Size Guide Trigger */}
               <button 
                 onClick={() => setIsSizeGuideOpen(true)}
                 className="text-xs text-muted underline flex items-center gap-1 hover:text-primary"
@@ -159,7 +164,7 @@ export default function ProductDetails() {
               </button>
             </div>
             
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+            <div className={`grid grid-cols-3 sm:grid-cols-6 gap-2 p-1 rounded-sm ${error ? 'ring-2 ring-red-500 bg-red-50' : ''}`}>
               {PRODUCT.sizes.map((size) => (
                 <button
                   key={size}
@@ -167,22 +172,35 @@ export default function ProductDetails() {
                   className={`py-3 text-sm border transition-all duration-200
                     ${selectedSize === size 
                       ? 'border-primary bg-primary text-white' 
-                      : 'border-border hover:border-primary text-primary'
+                      : 'border-border hover:border-primary text-primary bg-white'
                     }`}
                 >
                   {size}
                 </button>
               ))}
             </div>
-            {error && <p className="text-red-500 text-xs mt-2">{error}</p>}
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, y: -5 }} 
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-2 text-red-500 text-xs mt-2 font-medium"
+              >
+                <AlertCircle size={14} /> {error}
+              </motion.div>
+            )}
           </div>
 
-          <button 
+          {/* ADD TO BAG BUTTON (With Shake Animation) */}
+          <motion.button 
             onClick={handleAddToCart}
-            className="w-full bg-primary text-white py-4 uppercase tracking-widest hover:bg-accent transition-colors duration-300 shadow-md hover:shadow-lg"
+            animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : {}}
+            transition={{ duration: 0.4 }}
+            className={`w-full py-4 uppercase tracking-widest transition-colors duration-300 shadow-md hover:shadow-lg
+              ${error ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-primary text-white hover:bg-accent'}
+            `}
           >
-            Add to Bag
-          </button>
+            {error ? 'Select a Size' : 'Add to Bag'}
+          </motion.button>
 
           <div className="flex items-center gap-3 bg-secondary/50 p-4 border border-border">
             <Truck className="text-muted" size={20} />
@@ -192,7 +210,7 @@ export default function ProductDetails() {
             </p>
           </div>
 
-          {/* New Accordions (Product Details, Size & Fit, etc.) */}
+          {/* Accordions */}
           <div className="border-t border-border pt-4">
             {PRODUCT.accordions.map((item, idx) => (
               <div key={idx} className="border-b border-border">
@@ -211,7 +229,6 @@ export default function ProductDetails() {
                       exit={{ height: 0, opacity: 0 }}
                       className="overflow-hidden"
                     >
-                      {/* Render line breaks properly */}
                       <p className="pb-6 text-sm text-muted leading-relaxed whitespace-pre-line">
                         {item.content}
                       </p>
@@ -224,17 +241,12 @@ export default function ProductDetails() {
         </div>
       </div>
 
-      {/* 2. REVIEWS SECTION (With Ref for scrolling) */}
       <div ref={reviewsRef}>
         <ReviewsSection />
       </div>
 
-      {/* 3. RELATED PRODUCTS */}
       <RelatedProducts />
-
-      {/* MODAL (Rendered at root level practically) */}
       <SizeGuideModal isOpen={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} />
-
     </div>
   );
 }
