@@ -3,6 +3,7 @@ import Navbar from './components/layout/Navbar';
 import CustomLanding from './pages/custom/CustomLanding'; 
 import BookConsultation from './pages/custom/BookConsultation';
 import Shop from './pages/shop/Shop';
+import { Toaster } from 'sonner';
 import CartDrawer from './components/checkout/CartDrawer';
 import ProductDetails from './pages/product/ProductDetails';
 import Checkout from './pages/checkout/Checkout';
@@ -11,6 +12,7 @@ export default function App() {
   return (
     <Router>
       <div className="min-h-screen bg-secondary text-primary font-sans">
+        <Toaster position="top-center" richColors />
         <Navbar />
         <CartDrawer />
         

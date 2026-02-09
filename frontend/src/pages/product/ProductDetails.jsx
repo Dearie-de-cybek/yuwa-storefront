@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ChevronDown, ChevronUp, Ruler, Truck, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Star, ChevronDown, ChevronUp, Ruler, Truck, ArrowLeft } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { toast } from 'sonner'; 
 
 // Components
 import SizeGuideModal from '../../components/product/SizeGuideModal';
@@ -41,11 +42,9 @@ export default function ProductDetails() {
   const reviewsRef = useRef(null);
 
   const [selectedColor, setSelectedColor] = useState(PRODUCT.colors[0]);
-  const [selectedSize, setSelectedSize] = useState(null); // Default to NULL to force selection
+  const [selectedSize, setSelectedSize] = useState(null); 
   const [activeAccordion, setActiveAccordion] = useState(null);
-  const [error, setError] = useState('');
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [shake, setShake] = useState(false); // Animation state
 
   useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
@@ -54,44 +53,54 @@ export default function ProductDetails() {
   };
 
   const handleAddToCart = () => {
+    // 1. VALIDATION TOAST
     if (!selectedSize) {
-      setError('Please select a size to continue.');
-      setShake(true); // Trigger shake animation
-      setTimeout(() => setShake(false), 500); // Reset animation
+      toast.error("Please select a size", {
+        description: "We need to know your fit before adding to bag.",
+        duration: 3000,
+        style: { background: '#FFF0F0', color: '#E00', border: '1px solid #FFCDCD' }
+      });
       return;
     }
 
-    setError('');
-    
-    // Add to Cart with specific details
-    addToCart({
-      id: PRODUCT.id,
-      name: PRODUCT.name,
-      price: PRODUCT.price,
-      variant: {
-        id: `${selectedColor.name}-${selectedSize}`, // Unique ID: "Emerald-M"
+    // 2. SUCCESS
+    addToCart(
+      { 
+        id: PRODUCT.id, 
+        name: PRODUCT.name, 
+        price: PRODUCT.price 
+      }, 
+      {
+        id: `${selectedColor.name}-${selectedSize}`,
         colorName: selectedColor.name,
         size: selectedSize,
         image: selectedColor.images[0]
       }
-    }, null);
+    );
+
+    // 3. SUCCESS TOAST
+    toast.success(`Added to Bag`, {
+      description: `${PRODUCT.name} (${selectedSize})`,
+      duration: 2000,
+      style: { background: '#F0FFF4', color: '#046c4e', border: '1px solid #C6F6D5' }
+    });
   };
 
   return (
     <div className="min-h-screen pt-32 bg-white">
       
       {/* 1. TOP SECTION */}
-      <div className="px-6 mb-8 max-w-[1440px] mx-auto">
+      <div className="px-6 mb-8 max-w-360 mx-auto">
         <Link to="/shop/ready-to-wear" className="text-xs text-muted hover:text-primary flex items-center gap-2 uppercase tracking-widest">
           <ArrowLeft size={14} /> Back to Shop
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 max-w-[1440px] mx-auto px-6 mb-20">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 max-w-360 mx-auto px-6 mb-20">
         
         {/* LEFT: GALLERY */}
         <div className="flex flex-col gap-4">
-          <div className="w-full aspect-[3/4] bg-secondary overflow-hidden">
+          <div className="w-full aspect-3/4 bg-secondary overflow-hidden">
              <motion.img 
                key={selectedColor.name}
                initial={{ opacity: 0 }}
@@ -153,9 +162,8 @@ export default function ProductDetails() {
           <div>
             <div className="flex justify-between items-center mb-3">
               <span className="text-xs font-bold uppercase tracking-widest text-muted">
-                Size <span className="text-red-500">*</span>
+                Size
               </span>
-              
               <button 
                 onClick={() => setIsSizeGuideOpen(true)}
                 className="text-xs text-muted underline flex items-center gap-1 hover:text-primary"
@@ -164,11 +172,11 @@ export default function ProductDetails() {
               </button>
             </div>
             
-            <div className={`grid grid-cols-3 sm:grid-cols-6 gap-2 p-1 rounded-sm ${error ? 'ring-2 ring-red-500 bg-red-50' : ''}`}>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
               {PRODUCT.sizes.map((size) => (
                 <button
                   key={size}
-                  onClick={() => { setSelectedSize(size); setError(''); }}
+                  onClick={() => setSelectedSize(size)}
                   className={`py-3 text-sm border transition-all duration-200
                     ${selectedSize === size 
                       ? 'border-primary bg-primary text-white' 
@@ -179,28 +187,15 @@ export default function ProductDetails() {
                 </button>
               ))}
             </div>
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, y: -5 }} 
-                animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-2 text-red-500 text-xs mt-2 font-medium"
-              >
-                <AlertCircle size={14} /> {error}
-              </motion.div>
-            )}
           </div>
 
-          {/* ADD TO BAG BUTTON (With Shake Animation) */}
-          <motion.button 
+          {/* ADD TO BAG BUTTON */}
+          <button 
             onClick={handleAddToCart}
-            animate={shake ? { x: [0, -10, 10, -10, 10, 0] } : {}}
-            transition={{ duration: 0.4 }}
-            className={`w-full py-4 uppercase tracking-widest transition-colors duration-300 shadow-md hover:shadow-lg
-              ${error ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-primary text-white hover:bg-accent'}
-            `}
+            className="w-full bg-primary text-white py-4 uppercase tracking-widest hover:bg-accent transition-colors duration-300 shadow-md hover:shadow-lg"
           >
-            {error ? 'Select a Size' : 'Add to Bag'}
-          </motion.button>
+            Add to Bag
+          </button>
 
           <div className="flex items-center gap-3 bg-secondary/50 p-4 border border-border">
             <Truck className="text-muted" size={20} />
