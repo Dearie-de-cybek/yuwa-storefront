@@ -14,7 +14,7 @@ if (result.error) {
   console.log('✅ .env file loaded.');
 }
 
-// Debug: Check what actually loaded (Don't log full secrets in production!)
+// Debug: Check what actually loaded
 console.log('🔍 Diagnostics:');
 console.log(`   - PORT: ${process.env.PORT || 'Not set (Defaulting to 5000)'}`);
 console.log(`   - DATABASE_URL: ${process.env.DATABASE_URL ? 'Loaded (Hidden)' : '❌ MISSING!'}`);
@@ -31,39 +31,53 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const prisma = new PrismaClient();
 
-// Middleware
-app.use(cors({
-  origin: 'http://localhost:5173', 
-  credentials: true,               
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], 
-  allowedHeaders: ['Content-Type', 'Authorization']    
-}));
+// ========== MIDDLEWARE ==========
+
+// Manual CORS Configuration (more reliable than cors package)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', 'http://localhost:5173', 'http://127.0.0.1:5173');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  
+  next();
+});
+
+// Body Parser
 app.use(express.json());
 
-// Request Logger (See every request coming in)
+// Request Logger
 app.use((req, res, next) => {
   console.log(`📥 ${req.method} ${req.originalUrl}`);
   next();
 });
 
-// --- ROUTES ---
+// ========== ROUTES ==========
 const userRoutes = require('./routes/userRoutes');
 // const productRoutes = require('./routes/productRoutes'); 
 
 app.use('/api/users', userRoutes);
 // app.use('/api/products', productRoutes);
 
+// Root Route
 app.get('/', (req, res) => {
   res.send('💎 YUWA Luxury API is running...');
 });
 
-// Global Error Handler (Catch crashes inside routes)
+// ========== ERROR HANDLING ==========
+
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error('🔥 Uncaught Error:', err.stack);
   res.status(500).json({ message: 'Internal Server Error', error: err.message });
 });
 
-// 2. STARTUP SEQUENCE
+// ========== STARTUP SEQUENCE ==========
 const startServer = async () => {
   try {
     // Test Database Connection

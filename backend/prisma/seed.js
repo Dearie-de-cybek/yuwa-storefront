@@ -1,16 +1,47 @@
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
+
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting Seeding...');
 
-  // 1. Clear existing data (optional, prevents duplicates)
+  // 1. Clear existing data
   await prisma.orderItem.deleteMany();
   await prisma.variant.deleteMany();
   await prisma.product.deleteMany();
-  await prisma.user.deleteMany();
+  await prisma.user.deleteMany(); // Wipes users, but we will recreate them immediately below!
 
-  // 2. Create Products with Variants
+  // --- 2. CREATE USERS (The Missing Piece) ---
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash("password123", salt); 
+
+  // A. Create the Admin
+  const admin = await prisma.user.create({
+    data: {
+      firstName: "Daro",
+      lastName: "Admin",
+      email: "admin@yuwa.com",
+      password: hashedPassword,
+      role: "ADMIN" // "God Mode" enabled
+    }
+  });
+
+  // B. Create a Customer (for testing)
+  const customer = await prisma.user.create({
+    data: {
+      firstName: "Test",
+      lastName: "Customer",
+      email: "customer@yuwa.com",
+      password: hashedPassword,
+      role: "CUSTOMER"
+    }
+  });
+
+  console.log(`👤 Created Admin: ${admin.email} (Pass: password123)`);
+  console.log(`👤 Created Customer: ${customer.email} (Pass: password123)`);
+
+  // --- 3. CREATE PRODUCTS ---
   const zaria = await prisma.product.create({
     data: {
       name: "The Zaria Silk Bubu",
@@ -70,7 +101,7 @@ async function main() {
     }
   });
 
-  console.log(`✅ Seeding Finished! Created ${zaria.name}, ${lagos.name}, etc.`);
+  console.log(`✅ Seeding Finished! Created Products: ${zaria.name}, ${lagos.name}`);
 }
 
 main()
