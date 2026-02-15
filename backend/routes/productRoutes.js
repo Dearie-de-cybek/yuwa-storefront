@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { getProducts, getProductById, deleteProduct } = require('../controllers/productController');
+const { 
+  getProducts, getProductById, createProduct, updateProduct, deleteProduct 
+} = require('../controllers/productController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
-// Public: Get All
-// Admin: Create (We will add POST later)
-router.route('/').get(getProducts);
+router.route('/')
+  .get(getProducts)
+  .post(protect, admin, createProduct);
 
-// Public: Get One
-// Admin: Delete
 router.route('/:id')
   .get(getProductById)
-  .delete(protect, admin, deleteProduct); // <--- Protected!
+  .put(protect, admin, updateProduct) // The new Update route
+  .delete(protect, admin, deleteProduct);
 
 module.exports = router;
