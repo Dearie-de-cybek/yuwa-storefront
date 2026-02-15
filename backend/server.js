@@ -1,102 +1,112 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const { PrismaClient } = require('@prisma/client');
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const { PrismaClient } = require("@prisma/client");
+const logger = require("./utils/logger"); 
 
-// 1. SETUP & LOGGING
-console.log('\n🚀 Starting YUWA Backend...');
-
-// Load Environment Variables
-const result = dotenv.config();
-if (result.error) {
-  console.error('❌ Error loading .env file:', result.error);
-} else {
-  console.log('✅ .env file loaded.');
-}
-
-// Debug: Check what actually loaded
-console.log('🔍 Diagnostics:');
-console.log(`   - PORT: ${process.env.PORT || 'Not set (Defaulting to 5000)'}`);
-console.log(`   - DATABASE_URL: ${process.env.DATABASE_URL ? 'Loaded (Hidden)' : '❌ MISSING!'}`);
-console.log(`   - JWT_SECRET: ${process.env.JWT_SECRET ? 'Loaded (Hidden)' : '❌ MISSING!'}`);
-
-// Stop immediately if critical vars are missing
-if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
-  console.error('\n⛔ CRITICAL ERROR: Missing Environment Variables.');
-  console.error('   Please check your .env file. Server stopping.');
-  process.exit(1);
-}
-
-const app = express();
-const PORT = process.env.PORT || 5000;
-const prisma = new PrismaClient();
-
-// ========== MIDDLEWARE ==========
-
-// Manual CORS Configuration (more reliable than cors package)
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173', 'http://127.0.0.1:5173');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  
-  next();
-});
-
-// Body Parser
-app.use(express.json());
-
-// Request Logger
-app.use((req, res, next) => {
-  console.log(`📥 ${req.method} ${req.originalUrl}`);
-  next();
-});
-
-// ========== ROUTES ==========
+// Import Routes
 const userRoutes = require('./routes/userRoutes');
-// const productRoutes = require('./routes/productRoutes'); 
 
-app.use('/api/users', userRoutes);
-// app.use('/api/products', productRoutes);
+dotenv.config();
 
-// Root Route
-app.get('/', (req, res) => {
-  res.send('💎 YUWA Luxury API is running...');
-});
+class App {
+  constructor() {
+    this.app = express();
+    this.port = process.env.PORT || 5001;
+    this.prisma = new PrismaClient();
+    
+    // 1. Initialize System
+    this.initializeMiddlewares();
+    this.initializeRoutes();
+    this.initializeErrorHandling();
+  }
 
-// ========== ERROR HANDLING ==========
+  // --- THE SECRET SAUCE: MANUAL PREFLIGHT HANDLER ---
+  handleCorsPreflightRequests(req, res, next) {
+    if (req.method === 'OPTIONS') {
+      res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      return res.status(204).end(); // Respond OK immediately
+    }
+    next();
+  }
 
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error('🔥 Uncaught Error:', err.stack);
-  res.status(500).json({ message: 'Internal Server Error', error: err.message });
-});
-
-// ========== STARTUP SEQUENCE ==========
-const startServer = async () => {
-  try {
-    // Test Database Connection
-    console.log('⏳ Connecting to Database...');
-    await prisma.$connect();
-    console.log('✅ Database Connected Successfully.');
-
-    // Start Listening
-    app.listen(PORT, () => {
-      console.log(`\n💎 YUWA Server running on http://localhost:${PORT}`);
-      console.log('   Ready for requests...\n');
+ initializeMiddlewares() {
+    // 1. Logger
+    this.app.use((req, res, next) => {
+      logger.http(`${req.method} ${req.url}`);
+      next();
     });
 
-  } catch (error) {
-    console.error('\n❌ FAILED TO START SERVER:');
-    console.error(error);
-    await prisma.$disconnect();
-    process.exit(1);
-  }
-};
+    // 2. Manual preflight handler (fixes Express 5 + cors issue)
+    this.app.use(this.handleCorsPreflightRequests);
 
-startServer();
+    // 3. Official CORS Package
+    this.app.use(cors({
+      origin: 'http://localhost:5173',
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization']
+    }));
+
+    // 4. Body Parsers
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: true }));
+  }
+
+  initializeRoutes() {
+    // Mount your routes here
+    this.app.use("/api/users", userRoutes);
+    // this.app.use("/api/products", productRoutes);
+
+    // Default Route
+    this.app.get('/', (req, res) => {
+      res.send('💎 YUWA Luxury API is Running');
+    });
+  }
+
+ initializeErrorHandling() {
+    // 404 handler
+    this.app.all("*", (req, res) => {
+      res.status(404).json({
+        success: false,
+        message: `Route ${req.originalUrl} not found`
+      });
+    });
+
+    // Global Crash Handler
+    this.app.use((err, req, res, next) => {
+      logger.error(err.stack);
+      res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+        error: err.message
+      });
+    });
+  }
+
+  async listen() {
+    try {
+      // 1. Connect Database
+      logger.info("⏳ Connecting to Database...");
+      await this.prisma.$connect();
+      logger.info("✅ Database Connected.");
+
+      // 2. Start Server
+      this.app.listen(this.port, () => {
+        logger.info(`💎 YUWA Server started at http://localhost:${this.port}`);
+      });
+    } catch (error) {
+      logger.error("❌ Failed to start server:");
+      logger.error(error);
+      await this.prisma.$disconnect();
+      process.exit(1);
+    }
+  }
+}
+
+// Start the App
+const server = new App();
+server.listen();
