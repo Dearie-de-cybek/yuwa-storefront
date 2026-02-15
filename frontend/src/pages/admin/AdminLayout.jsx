@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   LayoutDashboard, ShoppingBag, Users, Tag, 
-  Settings, LogOut, Package, Menu, X 
+  Settings, LogOut, Package, Menu, X, 
+  Bell, User, ChevronDown, Search  
 } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
