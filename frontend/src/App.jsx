@@ -13,6 +13,10 @@ import LoginPage from './pages/auth/LoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import PromotionsPage from './pages/admin/PromotionsPage';
 import UserAccount from './pages/account/UserAccount';
+import ProductsPage from './pages/admin/ProductsPage';
+import OrdersPage from './pages/admin/OrdersPage';
+import CustomersPage from './pages/admin/CustomersPage';
+import SettingsPage from './pages/admin/SettingsPage';
 
 // Auth
 import { useAuth } from './context/AuthContext';
@@ -63,6 +67,11 @@ export default function App() {
               </ProtectedRoute>
             } 
           />
+
+          <Route path="/admin/products" element={<ProtectedRoute roleRequired="ADMIN"><ProductsPage /></ProtectedRoute>} />
+<Route path="/admin/orders" element={<ProtectedRoute roleRequired="ADMIN"><OrdersPage /></ProtectedRoute>} />
+<Route path="/admin/customers" element={<ProtectedRoute roleRequired="ADMIN"><CustomersPage /></ProtectedRoute>} />
+<Route path="/admin/settings" element={<ProtectedRoute roleRequired="ADMIN"><SettingsPage /></ProtectedRoute>} />
           
         </Routes>
       </div>
