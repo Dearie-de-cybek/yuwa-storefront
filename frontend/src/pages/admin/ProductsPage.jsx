@@ -1,14 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AdminLayout from '../admin/AdminLayout';
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, Edit, Trash2, Loader2 } from 'lucide-react';
+import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
+import { toast } from 'sonner';
 
 export default function ProductsPage() {
-  // Dummy Data
-  const products = [
-    { id: 1, name: "The Zaria Silk Bubu", price: 180000, stock: 45, category: "Luxury Bubu", image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?w=100" },
-    { id: 2, name: "Lagos City Midi", price: 120000, stock: 12, category: "Ready-to-Wear", image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=100" },
-    { id: 3, name: "Othello Maxi", price: 210000, stock: 0, category: "Luxury Bubu", image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?w=100" },
-  ];
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { token } = useAuth(); // Need token for delete
+
+  // 1. Fetch Real Data
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        // Remember to use your specific URL
+        const { data } = await axios.get('http://127.0.0.1:5000/api/products');
+        setProducts(data);
+      } catch (error) {
+        toast.error('Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // 2. Delete Handler
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this product?')) {
+      try {
+        await axios.delete(`http://127.0.0.1:5000/api/products/${id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setProducts(products.filter(p => p.id !== id)); // Remove from UI
+        toast.success('Product deleted');
+      } catch (error) {
+        toast.error('Delete failed');
+      }
+    }
+  };
 
   return (
     <AdminLayout>
@@ -20,53 +52,59 @@ export default function ProductsPage() {
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        {/* Filters */}
-        <div className="p-4 border-b border-gray-100 flex gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input type="text" placeholder="Search products..." className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-black" />
-          </div>
-          <button className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600"><Filter size={18} /></button>
-        </div>
+        {/* ... (Keep Filters Section same as before) ... */}
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold tracking-wider">
-              <tr>
-                <th className="px-6 py-4">Product</th>
-                <th className="px-6 py-4">Category</th>
-                <th className="px-6 py-4">Price</th>
-                <th className="px-6 py-4">Stock</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {products.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="px-6 py-4 flex items-center gap-4">
-                    <img src={product.image} alt="" className="w-12 h-12 object-cover rounded-md bg-gray-100" />
-                    <span className="font-medium text-gray-900">{product.name}</span>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">{product.category}</td>
-                  <td className="px-6 py-4 font-medium">₦{product.price.toLocaleString()}</td>
-                  <td className="px-6 py-4">
-                    {product.stock > 0 ? (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">{product.stock} in stock</span>
-                    ) : (
-                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">Out of Stock</span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-md"><Edit size={16} /></button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md"><Trash2 size={16} /></button>
-                    </div>
-                  </td>
+          {loading ? (
+            <div className="p-10 flex justify-center"><Loader2 className="animate-spin" /></div>
+          ) : (
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-bold tracking-wider">
+                <tr>
+                  <th className="px-6 py-4">Product</th>
+                  <th className="px-6 py-4">Category</th>
+                  <th className="px-6 py-4">Price</th>
+                  <th className="px-6 py-4">Variants</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {products.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="px-6 py-4 flex items-center gap-4">
+                      {/* Handle multiple images */}
+                      <img 
+                        src={product.images && product.images[0] ? product.images[0] : 'https://via.placeholder.com/100'} 
+                        alt="" 
+                        className="w-12 h-12 object-cover rounded-md bg-gray-100" 
+                      />
+                      <span className="font-medium text-gray-900">{product.name}</span>
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">{product.category}</td>
+                    <td className="px-6 py-4 font-medium">₦{product.price.toLocaleString()}</td>
+                    <td className="px-6 py-4">
+                      {/* Show variant count */}
+                      <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                        {product.variants ? product.variants.length : 0} Options
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-md"><Edit size={16} /></button>
+                        <button 
+                          onClick={() => handleDelete(product.id)}
+                          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </AdminLayout>
