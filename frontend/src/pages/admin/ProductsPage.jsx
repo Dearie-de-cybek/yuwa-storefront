@@ -4,18 +4,32 @@ import { Plus, Search, Filter, Edit, Trash2, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { token } = useAuth(); // Need token for delete
+  const { token } = useAuth();
+
+  // create handler
+const createProductHandler = async () => {
+  try {
+    const { data } = await axios.post('http://127.0.0.1:5001/api/products', {}, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    // Redirect to the new draft's edit page
+    navigate(`/admin/product/${data.id}/edit`);
+  } catch (error) {
+    toast.error('Could not create draft');
+  }
+};
 
   // 1. Fetch Real Data
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         // Remember to use your specific URL
-        const { data } = await axios.get('http://127.0.0.1:5000/api/products');
+        const { data } = await axios.get('http://127.0.0.1:5001/api/products');
         setProducts(data);
       } catch (error) {
         toast.error('Failed to load products');
@@ -31,7 +45,7 @@ export default function ProductsPage() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        await axios.delete(`http://127.0.0.1:5000/api/products/${id}`, {
+        await axios.delete(`http://127.0.0.1:5001/api/products/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setProducts(products.filter(p => p.id !== id)); // Remove from UI
@@ -46,7 +60,9 @@ export default function ProductsPage() {
     <AdminLayout>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h1 className="font-serif text-3xl">Inventory</h1>
-        <button className="flex items-center gap-2 bg-black text-white px-6 py-3 text-sm tracking-widest uppercase hover:bg-gray-800 rounded-lg transition-all">
+        <button className="flex items-center gap-2 bg-black text-white px-6 py-3 text-sm tracking-widest uppercase hover:bg-gray-800 rounded-lg transition-all"
+        onClick={createProductHandler}
+        >
           <Plus size={16} /> Add Product
         </button>
       </div>
@@ -91,7 +107,7 @@ export default function ProductsPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                        <button className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-md"><Edit size={16} /></button>
+                        <Link to={`/admin/product/${product.id}/edit`} className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-md"><Edit size={16} /></Link>
                         <button 
                           onClick={() => handleDelete(product.id)}
                           className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md"

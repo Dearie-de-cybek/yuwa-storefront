@@ -31,7 +31,7 @@ export default function ProductEditPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const { data } = await axios.get(`http://127.0.0.1:5000/api/products/${id}`);
+        const { data } = await axios.get(`http://127.0.0.1:5001/api/products/${id}`);
         setFormData({
           name: data.name,
           price: data.price,
@@ -101,7 +101,7 @@ export default function ProductEditPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      await axios.put(`http://127.0.0.1:5000/api/products/${id}`, formData, {
+      await axios.put(`http://127.0.0.1:5001/api/products/${id}`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       toast.success('Product Updated Successfully');

@@ -6,6 +6,7 @@ const logger = require("./utils/logger");
 
 // Import Routes
 const userRoutes = require('./routes/userRoutes');
+const productRoutes = require('./routes/productRoutes');
 
 dotenv.config();
 
@@ -59,7 +60,7 @@ class App {
   initializeRoutes() {
     // Mount your routes here
     this.app.use("/api/users", userRoutes);
-    // this.app.use("/api/products", productRoutes);
+    this.app.use("/api/products", productRoutes);
 
     // Default Route
     this.app.get('/', (req, res) => {

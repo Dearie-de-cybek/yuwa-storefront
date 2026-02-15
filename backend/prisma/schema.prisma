@@ -7,113 +7,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// 1. USER
+// ============================================================
+// 1. USER & AUTH
+// ============================================================
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
   password  String
-  firstName String?
-  lastName  String?
+  firstName String
+  lastName  String
+  phone     String?
+  avatar    String?
   role      Role     @default(CUSTOMER)
-  createdAt DateTime @default(now())
+  isActive  Boolean  @default(true)
 
-  orders    Order[]
-  addresses Address[]
-}
+  orders          Order[]
+  addresses       Address[]
+  wishlistItems   WishlistItem[]
+  reviews         Review[]
+  cart            Cart?
+  promotionUsages PromotionUsage[]
 
-// 2. PRODUCT (The Parent Item)
-model Product {
-  id          String   @id @default(uuid())
-  name        String
-  description String
-  price       Decimal  @db.Decimal(10, 2)
-  category    String // "Luxury Bubu", "Ready-to-Wear"
-  images      String[]
-
-  material         String? // e.g. "100% Silk Adire"
-  careInstructions String[] // List of strings: ["Dry clean only", "Do not bleach"]
-  details          String[] // List of strings: ["Hidden pockets", "Floor length"]
-
-  orderItems OrderItem[]
+  // Audit: track which admin created/updated resources
+  createdProducts  Product[]  @relation("ProductCreatedBy")
+  updatedProducts  Product[]  @relation("ProductUpdatedBy")
+  auditLogs        AuditLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  variants Variant[] // Links to specific sizes/colors
-}
-
-// 3. VARIANT (The Specific SKU: "Green - Medium")
-model Variant {
-  id    String  @id @default(uuid())
-  sku   String?
-  color String // "Emerald"
-  size  String // "M"
-  stock Int     @default(10)
-
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId String
-
-  orderItems OrderItem[]
-
-  @@unique([productId, color, size])
-}
-
-// 4. ORDER
-model Order {
-  id            String      @id @default(uuid())
-  totalAmount   Decimal     @db.Decimal(10, 2)
-  status        OrderStatus @default(PENDING)
-  paymentStatus String      @default("UNPAID") // "PAID", "FAILED"
-
-  // Link to User (Optional for Guest Checkout)
-  user   User?   @relation(fields: [userId], references: [id])
-  userId String?
-
-  // Snapshot of shipping info
-  shippingAddress Json
-  customerEmail   String
-
-  items     OrderItem[]
-  createdAt DateTime    @default(now())
-}
-
-// 5. ORDER ITEMS (Snapshot of what was bought)
-model OrderItem {
-  id       String  @id @default(uuid())
-  quantity Int
-  price    Decimal @db.Decimal(10, 2) // Price at time of purchase
-
-  order   Order  @relation(fields: [orderId], references: [id])
-  orderId String
-
-  variant   Variant  @relation(fields: [variantId], references: [id])
-  variantId String
-  Product   Product? @relation(fields: [productId], references: [id])
-  productId String?
-}
-
-// 6. ADDRESS BOOK
-model Address {
-  id      String @id @default(uuid())
-  street  String
-  city    String
-  state   String
-  zip     String
-  country String
-
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-}
-
-model Promotion {
-  id        String   @id @default(uuid())
-  title     String // e.g., "Independence Day Sale"
-  code      String   @unique // e.g., "NAIJA50"
-  discount  Float // e.g., 20.0 (percentage)
-  active    Boolean  @default(true)
-  startDate DateTime
-  endDate   DateTime
-  createdAt DateTime @default(now())
+  @@index([email])
+  @@index([role])
 }
 
 enum Role {
@@ -121,10 +46,690 @@ enum Role {
   ADMIN
 }
 
+// ============================================================
+// 2. PRODUCT
+// ============================================================
+
+model Product {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String        @unique
+  description String        @db.Text
+  price       Decimal       @db.Decimal(10, 2)
+  compareAt   Decimal?      @db.Decimal(10, 2) // "Was X" strikethrough price
+
+  status   ProductStatus @default(DRAFT)
+  featured Boolean       @default(false)
+
+  // Soft delete
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  // Category (normalized)
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  // Primary material for quick display
+  material String?
+
+  // SEO
+  metaTitle       String?
+  metaDescription String? @db.Text
+
+  // Audit
+  createdBy   User?   @relation("ProductCreatedBy", fields: [createdById], references: [id])
+  createdById String?
+  updatedBy   User?   @relation("ProductUpdatedBy", fields: [updatedById], references: [id])
+  updatedById String?
+
+  // Relations
+  variants          Variant[]
+  media             Media[]
+  contentSections   ProductContentSection[]
+  tags              ProductTag[]
+  collections       ProductCollection[]
+  orderItems        OrderItem[]
+  reviews           Review[]
+  wishlistItems     WishlistItem[]
+  regionalPrices    RegionalPrice[]
+  promotionProducts PromotionProduct[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([slug])
+  @@index([featured])
+  @@index([isDeleted])
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+// ============================================================
+// 3. PRODUCT CONTENT SECTIONS (Accordion Data)
+// ============================================================
+// Replaces string arrays. Each section is a typed, searchable row.
+// ============================================================
+
+model ProductContentSection {
+  id       String             @id @default(uuid())
+  type     ContentSectionType
+  title    String             // Display title: "Size & Fit"
+  content  String             @db.Text // Rich text or markdown
+  position Int                @default(0)
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, type])
+  @@index([productId])
+  @@index([type])
+}
+
+enum ContentSectionType {
+  DETAILS
+  SIZE_FIT
+  FABRIC_CARE
+  SHIPPING_RETURNS
+  CUSTOM
+}
+
+// ============================================================
+// 4. MEDIA — Unified media table (products & variants)
+// ============================================================
+
+model Media {
+  id       String    @id @default(uuid())
+  url      String
+  altText  String?
+  type     MediaType @default(IMAGE)
+  position Int       @default(0) // 0 = hero image
+  width    Int?
+  height   Int?
+  fileSize Int?      // Bytes
+
+  // Belongs to product, variant, or both
+  product   Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String?
+
+  variant   Variant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId String?
+
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([variantId])
+  @@index([position])
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum ReviewMediaType {
+  IMAGE
+  VIDEO
+}
+
+// ============================================================
+// 5. CATEGORY — Hierarchical (self-referencing)
+// ============================================================
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  image       String?
+
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  parentId String?
+  children Category[] @relation("CategoryTree")
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+// ============================================================
+// 6. TAGS
+// ============================================================
+
+model Tag {
+  id   String @id @default(uuid())
+  name String @unique
+  slug String @unique
+
+  products ProductTag[]
+
+  createdAt DateTime @default(now())
+
+  @@index([slug])
+}
+
+model ProductTag {
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+
+  @@id([productId, tagId])
+}
+
+// ============================================================
+// 7. COLLECTIONS — Curated drops & groupings
+// ============================================================
+
+model Collection {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String? @db.Text
+  image       String?
+  isActive    Boolean @default(true)
+
+  products             ProductCollection[]
+  promotionCollections PromotionCollection[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model ProductCollection {
+  product      Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId    String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String
+  position     Int        @default(0)
+
+  @@id([productId, collectionId])
+}
+
+// ============================================================
+// 8. VARIANT — The purchasable SKU
+// ============================================================
+
+model Variant {
+  id      String  @id @default(uuid())
+  sku     String  @unique
+  barcode String? @unique
+
+  // Core attributes
+  color String
+  size  String
+
+  // Price override (null = inherit product price)
+  price Decimal? @db.Decimal(10, 2)
+
+  // Inventory
+  stock Int @default(0)
+
+  // Shipping
+  weight Decimal? @db.Decimal(8, 2) // grams
+
+  isActive Boolean @default(true)
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  // Extended attributes (fabric type, pattern, etc.)
+  attributes VariantAttribute[]
+
+  // Relations
+  media         Media[]
+  orderItems    OrderItem[]
+  cartItems     CartItem[]
+  inventoryLogs InventoryLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, color, size])
+  @@index([productId])
+  @@index([sku])
+  @@index([stock])
+  @@index([isActive])
+}
+
+// ============================================================
+// 9. VARIANT ATTRIBUTES — Extensible key-value pairs
+// ============================================================
+// For attributes beyond color/size: fabric type, pattern, etc.
+// ============================================================
+
+model VariantAttribute {
+  id    String @id @default(uuid())
+  key   String // "fabricType", "pattern", "finish"
+  value String // "Aso-Oke", "Geometric", "Matte"
+
+  variant   Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId String
+
+  @@unique([variantId, key])
+  @@index([variantId])
+  @@index([key])
+}
+
+// ============================================================
+// 10. INVENTORY LOG — Movement tracking
+// ============================================================
+
+model InventoryLog {
+  id            String          @id @default(uuid())
+  quantityDelta Int             // +10 restock, -1 sale
+  newStock      Int             // Stock after this movement
+  reason        InventoryReason
+  note          String?
+
+  variant   Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId String
+
+  createdAt DateTime @default(now())
+
+  @@index([variantId])
+  @@index([reason])
+  @@index([createdAt])
+}
+
+enum InventoryReason {
+  SALE
+  RESTOCK
+  RETURN
+  ADMIN_EDIT
+  DAMAGE
+  CORRECTION
+}
+
+// ============================================================
+// 11. ORDER
+// ============================================================
+
+model Order {
+  id          String      @id @default(uuid())
+  orderNumber String      @unique // "YUWA-20260215-001"
+  status      OrderStatus @default(PENDING)
+
+  // Money
+  subtotal     Decimal @db.Decimal(10, 2)
+  shippingCost Decimal @db.Decimal(10, 2) @default(0)
+  discount     Decimal @db.Decimal(10, 2) @default(0)
+  totalAmount  Decimal @db.Decimal(10, 2)
+
+  // Payment
+  paymentStatus    PaymentStatus @default(UNPAID)
+  paymentMethod    String?
+  paymentReference String?
+
+  // Promotion applied
+  promotionId   String?
+  promotionCode String?
+
+  // Customer
+  user          User?   @relation(fields: [userId], references: [id])
+  userId        String?
+  customerEmail String
+  customerPhone String?
+
+  // Shipping snapshot (frozen at order time)
+  shippingAddress Json
+  shippingMethod  String?
+  trackingNumber  String?
+
+  currency String @default("NGN")
+
+  items OrderItem[]
+  notes OrderNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([orderNumber])
+  @@index([createdAt])
+}
+
 enum OrderStatus {
   PENDING
+  CONFIRMED
   PROCESSING
   SHIPPED
   DELIVERED
   CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+// ============================================================
+// 12. ORDER ITEMS — Frozen snapshot of purchase
+// ============================================================
+
+model OrderItem {
+  id       String  @id @default(uuid())
+  quantity Int
+  price    Decimal @db.Decimal(10, 2)
+
+  // Snapshot fields (frozen, survive product edits/deletes)
+  productName  String
+  variantColor String
+  variantSize  String
+  variantSku   String
+  imageUrl     String?
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+
+  // Reference only (analytics, not for display)
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId String?
+  variant   Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+  variantId String?
+
+  @@index([orderId])
+}
+
+// ============================================================
+// 13. ORDER NOTES — Internal admin notes
+// ============================================================
+
+model OrderNote {
+  id      String  @id @default(uuid())
+  content String  @db.Text
+  isAdmin Boolean @default(true)
+
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId String
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+// ============================================================
+// 14. CART — Persistent server-side cart
+// ============================================================
+
+model Cart {
+  id String @id @default(uuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String @unique
+
+  items CartItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CartItem {
+  id       String @id @default(uuid())
+  quantity Int    @default(1)
+
+  cart      Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  cartId    String
+  variant   Variant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  variantId String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+}
+
+// ============================================================
+// 15. ADDRESS BOOK
+// ============================================================
+
+model Address {
+  id        String  @id @default(uuid())
+  label     String? // "Home", "Office"
+  firstName String
+  lastName  String
+  street    String
+  city      String
+  state     String
+  zip       String
+  country   String  @default("NG")
+  phone     String?
+  isDefault Boolean @default(false)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@index([userId])
+}
+
+// ============================================================
+// 16. WISHLIST
+// ============================================================
+
+model WishlistItem {
+  id String @id @default(uuid())
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+// ============================================================
+// 17. REVIEWS — Rating, fit feedback, photos & video
+// ============================================================
+
+model Review {
+  id      String   @id @default(uuid())
+  rating  Int      // 1-5 stars
+  title   String?
+  content String?  @db.Text // The written comment
+
+  // Fit dropdown: "Runs Small", "True to Size", "Runs Large"
+  fit FitRating?
+
+  isApproved Boolean @default(false)
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  // Customer-uploaded photos/videos
+  media ReviewMedia[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([isApproved])
+  @@index([fit])
+  @@index([rating])
+}
+
+enum FitRating {
+  RUNS_SMALL
+  SLIGHTLY_SMALL
+  TRUE_TO_SIZE
+  SLIGHTLY_LARGE
+  RUNS_LARGE
+}
+
+// ============================================================
+// 17b. REVIEW MEDIA — Customer photos & short-form video
+// ============================================================
+
+model ReviewMedia {
+  id       String          @id @default(uuid())
+  url      String
+  type     ReviewMediaType @default(IMAGE)
+  altText  String?
+  position Int             @default(0)
+
+  review   Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reviewId String
+
+  createdAt DateTime @default(now())
+
+  @@index([reviewId])
+}
+
+// ============================================================
+// 18. PROMOTIONS — Product, Collection, or Global scope
+// ============================================================
+
+model Promotion {
+  id    String @id @default(uuid())
+  title String
+  code  String @unique
+
+  // Discount config
+  discountType  DiscountType
+  discountValue Decimal      @db.Decimal(10, 2)
+
+  // Scope
+  scope PromotionScope @default(GLOBAL)
+
+  // Limits
+  maxUses        Int? // null = unlimited
+  maxUsesPerUser Int?
+  currentUses    Int  @default(0)
+
+  // Minimum spend
+  minOrderAmount Decimal? @db.Decimal(10, 2)
+
+  // Validity
+  isActive  Boolean  @default(true)
+  startDate DateTime
+  endDate   DateTime
+
+  // Scoped targets
+  promotionProducts    PromotionProduct[]
+  promotionCollections PromotionCollection[]
+
+  usages PromotionUsage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
+  @@index([scope])
+  @@index([startDate, endDate])
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum PromotionScope {
+  GLOBAL
+  PRODUCT
+  COLLECTION
+}
+
+model PromotionProduct {
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  promotionId String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+
+  @@id([promotionId, productId])
+}
+
+model PromotionCollection {
+  promotion    Promotion  @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  promotionId  String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  collectionId String
+
+  @@id([promotionId, collectionId])
+}
+
+model PromotionUsage {
+  id String @id @default(uuid())
+
+  promotion   Promotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  promotionId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  orderId     String?
+
+  usedAt DateTime @default(now())
+
+  @@index([promotionId])
+  @@index([userId])
+  @@index([promotionId, userId])
+}
+
+// ============================================================
+// 19. REGIONAL PRICING — Multi-currency readiness
+// ============================================================
+
+model RegionalPrice {
+  id       String  @id @default(uuid())
+  region   String  // "NG", "US", "GB", "AE"
+  currency String  // "NGN", "USD", "GBP", "AED"
+  price    Decimal @db.Decimal(10, 2)
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  @@unique([productId, region])
+  @@index([productId])
+  @@index([region])
+}
+
+// ============================================================
+// 20. AUDIT LOG — Track all admin actions
+// ============================================================
+
+model AuditLog {
+  id         String @id @default(uuid())
+  action     String // "CREATE", "UPDATE", "DELETE", "RESTORE"
+  entityType String // "Product", "Order", "Promotion"
+  entityId   String
+  changes    Json?  // { before: {...}, after: {...} }
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
 }

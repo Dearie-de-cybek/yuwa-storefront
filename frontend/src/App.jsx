@@ -17,6 +17,7 @@ import ProductsPage from './pages/admin/ProductsPage';
 import OrdersPage from './pages/admin/OrdersPage';
 import CustomersPage from './pages/admin/CustomersPage';
 import SettingsPage from './pages/admin/SettingsPage';
+import ProductEditPage from './pages/admin/ProductEditPage';
 
 // Auth
 import { useAuth } from './context/AuthContext';
@@ -72,6 +73,14 @@ export default function App() {
 <Route path="/admin/orders" element={<ProtectedRoute roleRequired="ADMIN"><OrdersPage /></ProtectedRoute>} />
 <Route path="/admin/customers" element={<ProtectedRoute roleRequired="ADMIN"><CustomersPage /></ProtectedRoute>} />
 <Route path="/admin/settings" element={<ProtectedRoute roleRequired="ADMIN"><SettingsPage /></ProtectedRoute>} />
+<Route 
+  path="/admin/product/:id/edit" 
+  element={
+    <ProtectedRoute roleRequired="ADMIN">
+      <ProductEditPage />
+    </ProtectedRoute>
+  } 
+/>
           
         </Routes>
       </div>

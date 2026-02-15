@@ -4,7 +4,7 @@ import { Search, Eye, Filter } from 'lucide-react';
 export default function OrdersPage() {
   const orders = [
     { id: "#ORD-7821", customer: "Amaka Obi", date: "Oct 24, 2025", total: 180000, status: "Processing" },
-    { id: "#ORD-7820", customer: "Chioma Jesus", date: "Oct 23, 2025", total: 45000, status: "Delivered" },
+    { id: "#ORD-7820", customer: "Chioma Jesus", date: "Oct 23, 2025", total: 45001, status: "Delivered" },
     { id: "#ORD-7819", customer: "Funke Akindele", date: "Oct 22, 2025", total: 120000, status: "Cancelled" },
   ];
 
