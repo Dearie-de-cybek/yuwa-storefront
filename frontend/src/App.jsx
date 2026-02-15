@@ -1,80 +1,71 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navbar from './components/layout/Navbar';
-import CustomLanding from './pages/custom/CustomLanding'; 
-import BookConsultation from './pages/custom/BookConsultation';
-import Shop from './pages/shop/Shop';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Toaster } from 'sonner';
+
+// Layouts
+import PublicLayout from './components/layout/PublicLayout';
 import CartDrawer from './components/checkout/CartDrawer';
+
+// Pages
+import HomePage from './pages/home/HomePage';
+import Shop from './pages/shop/Shop';
 import ProductDetails from './pages/product/ProductDetails';
-import Checkout from './pages/checkout/Checkout';
-import HomePage from './pages/home/HomePage'; 
-import Footer from './components/layout/Footer';
-import { useAuth } from './context/AuthContext';
 import LoginPage from './pages/auth/LoginPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import PromotionsPage from './pages/admin/PromotionsPage';
 import UserAccount from './pages/account/UserAccount';
 
-// --- PROTECTED ROUTE COMPONENT ---
+// Auth
+import { useAuth } from './context/AuthContext';
+
+// Protected Route Component
 const ProtectedRoute = ({ children, roleRequired }) => {
   const { user, loading } = useAuth();
-
-  // 1. Still checking if user is logged in? Show nothing (or a spinner)
-  if (loading) return null; 
-
-  // 2. No user? Kick them to Login
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // 3. User is here, but are they allowed? (e.g. Customer trying to access Admin)
-  if (roleRequired && user.role !== roleRequired) {
-    return <Navigate to="/account" replace />; // Redirect to their own dashboard
-  }
-
-  // 4. Allowed! Render the page.
+  if (loading) return <div className="p-10 text-center">Loading Access...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (roleRequired && user.role !== roleRequired) return <Navigate to="/account" replace />;
   return children;
 };
 
 export default function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-secondary text-primary font-sans">
+      <div className="min-h-screen bg-secondary text-primary font-sans flex flex-col">
         <Toaster position="top-center" richColors />
-        <Navbar />
         <CartDrawer />
-        
-        <main>
-          <Routes>
+
+        <Routes>
+          {/* --- 1. PUBLIC ROUTES (Have Navbar & Footer) --- */}
+          <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
-            
-            {/* The Custom Creations Route */}
-            <Route path="/custom" element={<CustomLanding />} />
-            <Route path="/book-consultation" element={<BookConsultation />} />
             <Route path="/shop/ready-to-wear" element={<Shop />} />
             <Route path="/shop/bubus" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetails />} />
-            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/account" element={<ProtectedRoute><UserAccount /></ProtectedRoute>} />
+          </Route>
 
-            <Route path="/login" element={<LoginPage />} />
-        
-        {/* Protected User Route */}
-        <Route path="/account" element={
-          <ProtectedRoute>
-            <UserAccount />
-          </ProtectedRoute>
-        } />
+          {/* --- 2. AUTH ROUTES (Stand-alone, No Navbar) --- */}
+          <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected Admin Route */}
-        <Route path="/admin/dashboard" element={
-          <ProtectedRoute roleRequired="ADMIN">
-            <AdminDashboard />
-          </ProtectedRoute>
-        } />
-          </Routes>
-        </main>
-
-        <Footer />
+          {/* --- 3. ADMIN ROUTES (Uses AdminLayout internally) --- */}
+          <Route 
+            path="/admin/dashboard" 
+            element={
+              <ProtectedRoute roleRequired="ADMIN">
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/promotions" 
+            element={
+              <ProtectedRoute roleRequired="ADMIN">
+                <PromotionsPage />
+              </ProtectedRoute>
+            } 
+          />
+          
+        </Routes>
       </div>
     </Router>
-  )
+  );
 }
