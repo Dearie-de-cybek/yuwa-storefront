@@ -93,6 +93,17 @@ model Address {
   userId  String
 }
 
+model Promotion {
+  id          String   @id @default(uuid())
+  title       String   // e.g., "Independence Day Sale"
+  code        String   @unique // e.g., "NAIJA50"
+  discount    Float    // e.g., 20.0 (percentage)
+  active      Boolean  @default(true)
+  startDate   DateTime
+  endDate     DateTime
+  createdAt   DateTime @default(now())
+}
+
 enum Role {
   CUSTOMER
   ADMIN
