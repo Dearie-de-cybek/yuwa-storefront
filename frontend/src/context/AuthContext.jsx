@@ -45,6 +45,39 @@ const { data } = await axios.post(`${API_URL}/api/users/login`, { email, passwor
     }
   };
 
+  // REGISTER FUNCTION 
+  const register = async (firstName, lastName, email, password) => {
+    try {
+      // POST to /api/users (Standard REST endpoint for creation)
+      const { data } = await axios.post(`${API_URL}/api/users`, {
+        firstName,
+        lastName,
+        email,
+        password
+      });
+      
+      // If backend sends token immediately (Auto-Login), save it
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data));
+        setToken(data.token);
+        setUser(data);
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error("Registration Failed:", error.response?.data?.message);
+      return { success: false, error: error.response?.data?.message || "Registration failed" };
+    }
+  };
+
+  // ... Update the return statement to include register ...
+  return (
+    <AuthContext.Provider value={{ user, token, login, logout, register, loading }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+
   // LOGOUT FUNCTION
   const logout = () => {
     localStorage.removeItem('token');
