@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../../../context/AuthContext';
 import { toast } from 'sonner';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -141,7 +141,7 @@ export default function useProductForm(productId) {
   const changeStatus = async (newStatus) => {
     setPublishing(true);
     try {
-      await api.patch(`/api/products/${productId}/status`, { status: newStatus });
+      await api.post(`/api/products/${productId}/status`, { status: newStatus });
       updateField('status', newStatus);
       toast.success(newStatus === 'ACTIVE' ? 'Product published' : `Status: ${newStatus}`);
     } catch (err) {

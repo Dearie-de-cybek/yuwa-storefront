@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import AdminLayout from '../AdminLayout';
+import AdminLayout from '../admin/AdminLayout';
 import useProductForm from './components/product-edit/useProductForm';
 import GeneralTab from './components/product-edit/GeneralTab';
 import MediaTab from './components/product-edit/MediaTab';
