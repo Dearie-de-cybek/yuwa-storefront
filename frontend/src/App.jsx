@@ -10,6 +10,7 @@ import HomePage from './pages/home/HomePage';
 import Shop from './pages/shop/Shop';
 import ProductDetails from './pages/product/ProductDetails';
 import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import PromotionsPage from './pages/admin/PromotionsPage';
 import UserAccount from './pages/account/UserAccount';
@@ -50,6 +51,7 @@ export default function App() {
 
           {/* --- 2. AUTH ROUTES (Stand-alone, No Navbar) --- */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
 
           {/* --- 3. ADMIN ROUTES (Uses AdminLayout internally) --- */}
           <Route 
