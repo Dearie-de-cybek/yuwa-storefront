@@ -17,7 +17,6 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    // On load, check if we have a user stored
     const storedUser = localStorage.getItem('user');
     if (storedUser && token) {
       setUser(JSON.parse(storedUser));
@@ -25,30 +24,27 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, [token]);
 
-  // LOGIN FUNCTION
+  // 1. LOGIN FUNCTION
   const login = async (email, password) => {
     try {
-const { data } = await axios.post(`${API_URL}/api/users/login`, { email, password });
+      const { data } = await axios.post(`${API_URL}/api/users/login`, { email, password });
       
-      // Save to Storage
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data));
       
-      // Update State
       setToken(data.token);
       setUser(data);
       
-      return { success: true, role: data.role }; // Return role for redirection
+      return { success: true, role: data.role };
     } catch (error) {
       console.error("Login Failed:", error.response?.data?.message);
       return { success: false, error: error.response?.data?.message || "Login failed" };
     }
   };
 
-  // REGISTER FUNCTION 
+  // 2. REGISTER FUNCTION (The New Addition)
   const register = async (firstName, lastName, email, password) => {
     try {
-      // POST to /api/users (Standard REST endpoint for creation)
       const { data } = await axios.post(`${API_URL}/api/users`, {
         firstName,
         lastName,
@@ -56,7 +52,7 @@ const { data } = await axios.post(`${API_URL}/api/users/login`, { email, passwor
         password
       });
       
-      // If backend sends token immediately (Auto-Login), save it
+      // Auto-login after register
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data));
@@ -71,24 +67,18 @@ const { data } = await axios.post(`${API_URL}/api/users/login`, { email, passwor
     }
   };
 
-  // ... Update the return statement to include register ...
-  return (
-    <AuthContext.Provider value={{ user, token, login, logout, register, loading }}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
-
-  // LOGOUT FUNCTION
+  // 3. LOGOUT FUNCTION
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
     setToken(null);
-    window.location.href = '/login'; // Hard refresh to clear state
+    window.location.href = '/login'; 
   };
 
+  // 4. RETURN (Must be at the bottom, after all functions are defined)
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, token, login, register, logout, loading, setUser }}>
       {!loading && children}
     </AuthContext.Provider>
   );

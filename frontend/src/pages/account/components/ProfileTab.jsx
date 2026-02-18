@@ -1,20 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Added useEffect
 import { Loader2 } from 'lucide-react';
 
 export default function ProfileTab({ user, onUpdate }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    phone: user?.phone || '',
+    firstName: '',
+    lastName: '',
+    phone: '',
     password: '',
     confirmPassword: ''
   });
 
+  // WATCH FOR USER DATA AND UPDATE FORM
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        phone: user.phone || ''
+      }));
+    }
+  }, [user]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password && formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match"); // Replace with toast
+      // Use a toast here in real app
+      alert("Passwords do not match"); 
       return;
     }
     
@@ -37,18 +50,18 @@ export default function ProfileTab({ user, onUpdate }) {
             <label className="text-xs font-bold uppercase tracking-widest text-gray-500">First Name</label>
             <input 
               name="firstName" 
-              value={formData.firstName} 
+              value={formData.firstName} // Controlled input
               onChange={handleChange}
-              className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors" 
+              className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors font-medium" 
             />
           </div>
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Last Name</label>
             <input 
               name="lastName" 
-              value={formData.lastName} 
+              value={formData.lastName} // Controlled input
               onChange={handleChange}
-              className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors" 
+              className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors font-medium" 
             />
           </div>
         </div>
@@ -56,21 +69,20 @@ export default function ProfileTab({ user, onUpdate }) {
         <div className="space-y-2">
           <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Email Address</label>
           <input 
-            value={user?.email} 
+            value={user?.email || ''} 
             disabled 
             className="w-full border-b border-gray-300 py-2 text-gray-400 cursor-not-allowed bg-transparent" 
           />
-          <p className="text-[10px] text-gray-400">Contact support to change email.</p>
         </div>
 
         <div className="space-y-2">
            <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Phone Number</label>
            <input 
              name="phone"
-             value={formData.phone}
+             value={formData.phone} // Controlled input
              onChange={handleChange}
              placeholder="+234..."
-             className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors"
+             className="w-full border-b border-gray-300 py-2 focus:outline-none focus:border-black transition-colors font-medium"
            />
         </div>
 
