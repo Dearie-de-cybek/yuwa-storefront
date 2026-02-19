@@ -19,6 +19,7 @@ import OrdersPage from './pages/admin/OrdersPage';
 import CustomersPage from './pages/admin/CustomersPage';
 import SettingsPage from './pages/admin/SettingsPage';
 import ProductEditPage from './pages/admin/ProductEditPage';
+import Checkout from './pages/checkout/Checkout';
 
 // Auth
 import { useAuth } from './context/AuthContext';
@@ -52,6 +53,7 @@ export default function App() {
           {/* --- 2. AUTH ROUTES (Stand-alone, No Navbar) --- */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/checkout" element={<Checkout />} />
 
           {/* --- 3. ADMIN ROUTES (Uses AdminLayout internally) --- */}
           <Route 
