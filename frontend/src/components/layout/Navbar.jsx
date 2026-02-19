@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Search, User, ChevronDown } from 'lucide-react';
+import { ShoppingBag, Menu, X, Search, User, ChevronDown, ArrowRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import SearchOverlay from './SearchOverlay';
-
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,14 +14,12 @@ export default function Navbar() {
   const { toggleCartDrawer, cart } = useStore();
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
-  
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
- 
   useEffect(() => setIsOpen(false), [location]);
 
   const toggleSubmenu = (index) => {
@@ -37,9 +34,9 @@ export default function Navbar() {
       path: '/custom',
       isSpecial: true,
       children: [
-        { title: 'Prom', path: '/custom/prom' },
-        { title: 'Wedding Guest', path: '/custom/wedding' },
-        { title: 'Dinner & Events', path: '/custom/dinner' }
+        { title: 'Prom', path: '/custom/prom', desc: 'Own the night' },
+        { title: 'Wedding Guest', path: '/custom/wedding', desc: 'Elegant & unforgettable' },
+        { title: 'Dinner & Events', path: '/custom/dinner', desc: 'Command the room' }
       ]
     },
     { title: 'Journal', path: '/journal' } 
@@ -51,7 +48,7 @@ export default function Navbar() {
         className={`fixed w-full z-50 transition-all duration-500 ease-out 
         ${scrolled || isOpen ? 'bg-secondary/95 backdrop-blur-md border-b border-border py-4' : 'bg-transparent py-6'}`}
       >
-        <div className="max-w-360 mx-auto px-6 flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-6 flex items-center justify-between">
           
           {/* DESKTOP LEFT - Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
@@ -59,30 +56,61 @@ export default function Navbar() {
               <div key={idx} className="relative group">
                 <Link 
                   to={item.path} 
-                  className={`text-sm uppercase tracking-widest font-medium hover:text-accent transition-colors
+                  className={`flex items-center gap-1 text-sm uppercase tracking-widest font-medium hover:text-accent transition-colors
                     ${item.isSpecial ? 'text-accent' : 'text-primary'}`}
                 >
                   {item.title}
+                  {/* Dropdown Indicator Arrow */}
+                  {item.children && (
+                    <ChevronDown size={14} className="transition-transform duration-300 group-hover:rotate-180" />
+                  )}
                 </Link>
                 
-                {/* Desktop Dropdown for Custom Creations */}
+                {/* 💎 LUXURY MEGA MENU FOR DESKTOP */}
                 {item.children && (
-                  <div className="absolute top-full left-0 pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300">
-                    <div className="bg-white border border-border p-6 w-56 shadow-sm">
-                       <span className="text-xs text-muted mb-3 block border-b border-gray-100 pb-2">
-                         Made for moments that matter
-                       </span>
-                       <div className="flex flex-col space-y-3">
-                         {item.children.map((child, cIdx) => (
-                           <Link 
-                             key={cIdx} 
-                             to={child.path}
-                             className="text-primary hover:text-accent text-sm font-serif italic"
-                           >
-                             {child.title}
-                           </Link>
-                         ))}
+                  <div className="absolute top-full left-1/2 -translate-x-1/3 pt-8 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-500 ease-out z-50">
+                    <div className="bg-white border border-gray-100 shadow-2xl w-[650px] flex overflow-hidden">
+                       
+                       {/* Left Side: Links */}
+                       <div className="w-1/2 p-10 flex flex-col justify-center bg-white">
+                         <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-6 block border-b border-gray-100 pb-3">
+                           Bespoke Tailoring
+                         </span>
+                         
+                         <div className="flex flex-col space-y-5">
+                           {item.children.map((child, cIdx) => (
+                             <Link 
+                               key={cIdx} 
+                               to={child.path}
+                               className="group/link flex items-center justify-between"
+                             >
+                               <div>
+                                 <p className="text-primary group-hover/link:text-accent text-xl font-serif italic transition-colors">
+                                   {child.title}
+                                 </p>
+                                 <p className="text-[10px] uppercase tracking-wider text-gray-400 mt-1 opacity-0 group-hover/link:opacity-100 transition-opacity">
+                                   {child.desc}
+                                 </p>
+                               </div>
+                               <ArrowRight size={18} className="text-accent opacity-0 -translate-x-4 group-hover/link:opacity-100 group-hover/link:translate-x-0 transition-all duration-300" />
+                             </Link>
+                           ))}
+                         </div>
                        </div>
+
+                       {/* Right Side: Editorial Image */}
+                       <div className="w-1/2 relative bg-gray-100 overflow-hidden">
+                          <img 
+                            src="https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=800" 
+                            alt="Custom Atelier" 
+                            className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-[2000ms] ease-out"
+                          />
+                          <div className="absolute inset-0 bg-black/10" /> {/* Subtle overlay */}
+                          <div className="absolute bottom-6 left-6 right-6 text-center">
+                             <p className="text-white font-serif italic text-lg shadow-sm">Made for moments that matter</p>
+                          </div>
+                       </div>
+
                     </div>
                   </div>
                 )}
@@ -97,7 +125,7 @@ export default function Navbar() {
 
           {/* CENTER - Logo */}
           <Link to="/" className="absolute left-1/2 -translate-x-1/2 z-50">
-            <h1 className={`font-serif text-3xl md:text-4xl tracking-tight font-medium transition-colors duration-300 ${scrolled || isOpen ? 'text-primary' : 'text-primary'}`}>
+            <h1 className={`font-serif text-3xl md:text-4xl tracking-tight font-medium transition-colors duration-300 text-primary`}>
               YUWA
             </h1>
           </Link>
@@ -118,10 +146,10 @@ export default function Navbar() {
             className="relative hover:text-accent transition-colors">
               <ShoppingBag strokeWidth={1.5} size={22} />
               {cartCount > 0 && (
-      <span className="absolute -top-1 -right-2 bg-accent text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
-        {cartCount}
-      </span>
-    )}
+                <span className="absolute -top-1 -right-2 bg-accent text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
+                  {cartCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -131,7 +159,6 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* Backdrop */}
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -140,7 +167,6 @@ export default function Navbar() {
               className="fixed inset-0 bg-black/20 backdrop-blur-sm z-[60]"
             />
             
-            {/* Drawer */}
             <motion.div 
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
@@ -170,13 +196,12 @@ export default function Navbar() {
                         <button onClick={() => toggleSubmenu(idx)} className="p-2">
                           <ChevronDown 
                             size={20} 
-                            className={`transition-transform duration-300 ${activeSubmenu === idx ? 'rotate-180' : ''}`}
+                            className={`transition-transform duration-300 ${activeSubmenu === idx ? 'rotate-180 text-accent' : ''}`}
                           />
                         </button>
                       )}
                     </div>
 
-                    {/* Mobile Accordion for Custom Creations */}
                     <AnimatePresence>
                       {item.children && activeSubmenu === idx && (
                         <motion.div
@@ -191,9 +216,10 @@ export default function Navbar() {
                                 key={cIdx} 
                                 to={child.path}
                                 onClick={() => setIsOpen(false)}
-                                className="text-muted text-lg hover:text-accent font-sans"
+                                className="text-muted text-lg hover:text-accent font-serif italic flex items-center gap-2 group"
                               >
                                 {child.title}
+                                <ArrowRight size={14} className="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                               </Link>
                             ))}
                           </div>
@@ -207,11 +233,11 @@ export default function Navbar() {
               <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
               <div className="mt-16 pt-8 border-t border-border">
-                <Link to="/account" className="flex items-center space-x-3 text-primary mb-4">
+                <Link to="/account" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 text-primary mb-4">
                   <User size={20} />
-                  <span>My Account</span>
+                  <span className="font-medium uppercase tracking-widest text-xs">My Account</span>
                 </Link>
-                <div className="text-sm text-muted">
+                <div className="text-xs uppercase tracking-widest text-muted">
                   <p>Currency: AUD</p>
                 </div>
               </div>
