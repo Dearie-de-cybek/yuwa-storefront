@@ -1,17 +1,18 @@
 // ============================================================
-// useCheckout — Manages checkout flow against backend API
+// useCheckout — Manages checkout against backend API
+// Works with the existing useStore for cart data
 // ============================================================
 
 import { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
-import useCartStore from '../../store/useCartStore';
+import { useStore } from '../../store/useStore';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function useCheckout() {
-  const { token, user } = useAuth();
-  const clearCart = useCartStore((s) => s.clearCart);
+  const { token } = useAuth();
+  const clearCart = useStore((s) => s.clearCart);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -23,18 +24,22 @@ export default function useCheckout() {
   });
 
   /**
-   * Place order via backend checkout endpoint.
-   * @param {Object} params
-   * @param {Object} params.shippingAddress - { firstName, lastName, street, city, state, zip, country, phone }
-   * @param {string} params.shippingMethod  - 'Standard' | 'Express' | 'Same Day'
-   * @param {string} params.customerPhone
-   * @param {string} params.promotionCode   - Optional promo code
+   * Sync local cart to server, then place order via checkout endpoint.
+   *
+   * We sync first because the backend checkout reads from the
+   * server-side cart (not the request body). This ensures
+   * whatever is in localStorage ends up on the server before
+   * the order is created.
    */
   const placeOrder = async ({ shippingAddress, shippingMethod, customerPhone, promotionCode }) => {
     setLoading(true);
     setError(null);
 
     try {
+      // 1. Ensure local cart is synced to server
+      await useStore.getState().syncToServer();
+
+      // 2. Place order (backend reads from server cart)
       const { data } = await api.post('/api/orders/checkout', {
         shippingAddress,
         shippingMethod: shippingMethod || 'Standard',
@@ -44,8 +49,8 @@ export default function useCheckout() {
 
       setOrder(data);
 
-      // Cart is cleared on the backend, sync local state
-      useCartStore.getState().reset();
+      // 3. Clear local cart (server cart already cleared by backend)
+      clearCart();
 
       return { success: true, order: data };
     } catch (err) {
@@ -58,21 +63,10 @@ export default function useCheckout() {
     }
   };
 
-  /**
-   * Validate a promo code before placing order.
-   */
-  const validatePromo = async (code, subtotal) => {
-    // For now, we'll validate at checkout time.
-    // The backend validates promo during the checkout call.
-    // This is a placeholder if you want pre-validation later.
-    return { valid: true, code };
-  };
-
   return {
     loading,
     error,
     order,
     placeOrder,
-    validatePromo,
   };
 }
