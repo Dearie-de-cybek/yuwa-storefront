@@ -1,11 +1,11 @@
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
-// --- LUXURY ANIMATION EASE ---
-// A custom bezier curve that starts fast but lingers at the end (the "Vogue" effect)
+// --- LUXURY ANIMATION CONFIG ---
 const luxuryEase = [0.16, 1, 0.3, 1];
+const cinematicWipe = [0.77, 0, 0.175, 1]; // Sharp, elegant curve for the image wipe
 
 const fadeUp = {
   hidden: { opacity: 0, y: 60 },
@@ -17,41 +17,81 @@ const textReveal = {
   visible: { opacity: 1, y: 0, transition: { duration: 1.2, ease: luxuryEase } }
 };
 
+// --- CAROUSEL ASSETS & ANIMATION ---
+const HERO_IMAGES = [
+  '/images/hero2.jpg',
+  '/images/hero3.jpg',
+  '/images/hero4.jpg'
+];
+
+const sliderVariants = {
+  enter: {
+    clipPath: "inset(100% 0% 0% 0%)", // Starts fully clipped at the bottom
+    scale: 1.05,
+  },
+  center: {
+    clipPath: "inset(0% 0% 0% 0%)", // Fully revealed
+    scale: 1,
+    transition: {
+      clipPath: { duration: 1.8, ease: cinematicWipe },
+      scale: { duration: 6, ease: "linear" } // Slow continuous breathing effect
+    }
+  },
+  exit: {
+    opacity: 0,
+    transition: { duration: 1.8, ease: cinematicWipe }
+  }
+};
+
 export default function HomePage() {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
+  
+  // Carousel State
+  const [currentImage, setCurrentImage] = useState(0);
 
-  // Subtle global parallax
+  // Auto-play the carousel every 5.5 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % HERO_IMAGES.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, []);
+
   const slowScroll = useTransform(scrollYProgress, [0, 1], [0, -200]);
 
   return (
     <div ref={containerRef} className="bg-[#FBF9F5] text-[#1A1918] font-sans overflow-hidden selection:bg-[#1A1918] selection:text-[#FBF9F5]">
       
       {/* =========================================
-          1. HERO CAMPAIGN
-          Full bleed, cinematic lighting, poetic text.
+          1. HERO CAMPAIGN (Cinematic Carousel)
       ========================================= */}
       <section className="relative w-full h-screen overflow-hidden bg-[#1A1918]">
-        {/* Subtle internal image scale for a "breathing" effect */}
-        <motion.div 
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 3, ease: "easeOut" }}
-          className="absolute inset-0 w-full h-full"
-        >
-          <img 
-            src="/images/hero2.jpg" 
-            alt="YUWA Campaign" 
-            className="w-full h-full object-cover object-[50%_20%] opacity-80"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1918]/80 via-transparent to-transparent" />
-        </motion.div>
+        
+        {/* Animated Background Images */}
+        <div className="absolute inset-0 w-full h-full">
+          <AnimatePresence initial={false}>
+            <motion.img
+              key={currentImage}
+              src={HERO_IMAGES[currentImage]}
+              variants={sliderVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              alt="YUWA Campaign"
+              className="absolute inset-0 w-full h-full object-cover object-[50%_20%] opacity-80"
+            />
+          </AnimatePresence>
+          {/* Gradient Overlay (Stays static above the images) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1918]/90 via-transparent to-transparent z-0" />
+        </div>
 
-        <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 max-w-[1600px] mx-auto w-full z-10 pb-20 md:pb-32">
+        {/* Static Poetic Typography */}
+        <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 max-w-[1600px] mx-auto w-full z-10 pb-20 md:pb-32 pointer-events-none">
           <div className="overflow-hidden mb-4">
             <motion.h1 
               initial="hidden" animate="visible" variants={textReveal}
-              className="font-serif text-5xl md:text-8xl lg:text-[8rem] leading-[0.85] text-[#FBF9F5] tracking-tight"
+              className="font-serif text-5xl md:text-8xl lg:text-[8rem] leading-[0.85] text-[#FBF9F5] tracking-tight pointer-events-auto"
             >
               Rooted in heritage.
             </motion.h1>
@@ -59,12 +99,15 @@ export default function HomePage() {
           <div className="overflow-hidden flex flex-col md:flex-row md:items-end justify-between gap-8">
             <motion.h1 
               initial="hidden" animate="visible" variants={textReveal} transition={{ delay: 0.2 }}
-              className="font-serif text-5xl md:text-8xl lg:text-[8rem] leading-[0.85] text-[#FBF9F5] tracking-tight italic font-light"
+              className="font-serif text-5xl md:text-8xl lg:text-[8rem] leading-[0.85] text-[#FBF9F5] tracking-tight italic font-light pointer-events-auto"
             >
               Worn without borders.
             </motion.h1>
             
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1.5 }}>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1.5 }}
+              className="pointer-events-auto"
+            >
               <Link to="/shop/ready-to-wear" className="group flex items-center gap-4 text-[10px] text-[#FBF9F5] uppercase tracking-[0.3em] font-bold border-b border-[#FBF9F5]/30 pb-2 hover:border-[#FBF9F5] transition-colors duration-500">
                 Explore the Collection
                 <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-500" />
@@ -76,7 +119,6 @@ export default function HomePage() {
 
       {/* =========================================
           2. IDENTITY STATEMENT
-          Massive typographic scale, intentional whitespace.
       ========================================= */}
       <section className="py-32 md:py-56 px-6 md:px-12 max-w-[1440px] mx-auto relative">
         <motion.div 
@@ -98,12 +140,10 @@ export default function HomePage() {
 
       {/* =========================================
           3. EDITORIAL STORY SECTION
-          Broken grid, overlapping images, parallax.
       ========================================= */}
       <section className="px-6 md:px-12 max-w-[1600px] mx-auto pb-32 md:pb-48">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-0 items-center">
           
-          {/* Left Image (Tall) */}
           <motion.div 
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
             className="md:col-span-5 md:col-start-1 relative z-10"
@@ -118,7 +158,6 @@ export default function HomePage() {
             <p className="mt-6 text-[10px] uppercase tracking-[0.2em] text-[#555]">01. The Craft / Abeokuta</p>
           </motion.div>
 
-          {/* Right Text Block (Overlapping) */}
           <motion.div 
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
             className="md:col-span-6 md:col-start-6 lg:col-start-7 bg-[#FBF9F5] md:-ml-24 z-20 md:p-12 relative"
@@ -137,12 +176,9 @@ export default function HomePage() {
       </section>
 
       {/* =========================================
-          4. CATEGORY PANELS (Not Grids)
-          Massive, full-width alternating editorial blocks.
+          4. CATEGORY PANELS
       ========================================= */}
       <section className="w-full flex flex-col gap-4 px-4 md:px-6 pb-32 md:pb-48">
-        
-        {/* Panel 1 */}
         <Link to="/shop/bubus" className="group relative w-full h-[70vh] md:h-[85vh] overflow-hidden flex items-center justify-center bg-[#1A1918]">
           <img 
             src="/images/bubus.jpg" 
@@ -155,7 +191,6 @@ export default function HomePage() {
           </div>
         </Link>
 
-        {/* Panel 2 */}
         <Link to="/custom" className="group relative w-full h-[70vh] md:h-[85vh] overflow-hidden flex items-center justify-center bg-[#1A1918]">
           <img 
             src="/images/bridal.jpg" 
@@ -170,8 +205,7 @@ export default function HomePage() {
       </section>
 
       {/* =========================================
-          5. CURATED SHOWCASE ("The Edit")
-          Horizontal, sparse layout. Story over sales.
+          5. CURATED SHOWCASE
       ========================================= */}
       <section className="py-24 md:py-32 bg-[#EFECE6]">
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 mb-20 flex justify-between items-end">
@@ -181,10 +215,7 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* Horizontal Scroll Container */}
         <div className="flex overflow-x-auto hide-scrollbar gap-12 md:gap-24 px-6 md:px-12 pb-12 snap-x">
-          
-          {/* Curated Item 1 */}
           <div className="min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group">
             <Link to="/product/1" className="overflow-hidden bg-[#EAE8E3] aspect-[3/4] mb-6">
               <img src="/images/silk.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" alt="Silk Adire" />
@@ -198,7 +229,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Curated Item 2 */}
           <div className="min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group mt-12 md:mt-24">
             <Link to="/product/2" className="overflow-hidden bg-[#EAE8E3] aspect-[3/4] mb-6">
               <img src="/images/two.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" alt="Aso-Oke Two Piece" />
@@ -211,16 +241,13 @@ export default function HomePage() {
               <span className="font-serif italic text-lg">₦210,000</span>
             </div>
           </div>
-
         </div>
       </section>
 
       {/* =========================================
           6. CULTURAL ANCHOR
-          Intimate, dark closing statement.
       ========================================= */}
       <section className="bg-[#1A1918] text-[#FBF9F5] py-32 md:py-48 px-6 md:px-12 text-center relative overflow-hidden">
-        {/* Grain/Texture Overlay */}
         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/stardust.png")' }} />
         
         <motion.div 
@@ -237,7 +264,6 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Required style for horizontal scrollbar hiding */}
       <style dangerouslySetInnerHTML={{__html: `
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
