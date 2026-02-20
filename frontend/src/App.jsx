@@ -24,6 +24,7 @@ import CustomLanding from './pages/custom/CustomLanding';
 import BookConsultation from './pages/custom/BookConsultation';
 import MyOrders from './pages/account/MyOrders';
 import OrderDetail from './pages/account/OrderDetail';
+import Journal from './pages/journal/Journal';
 
 // Auth
 import { useAuth } from './context/AuthContext';
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="/custom" element={<CustomLanding />} />
             <Route path="/custom/:category" element={<CustomLanding />} />
             <Route path="/custom/book" element={<BookConsultation />} />
+            <Route path="/journal" element={<Journal />} />
           </Route>
 
           {/* --- 2. AUTH ROUTES (Stand-alone, No Navbar) --- */}
