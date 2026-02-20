@@ -82,10 +82,12 @@ export default function Checkout() {
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   // ── Place order ──
+  // ── Place order ──
   const handlePlaceOrder = async () => {
     const values = form.getValues();
 
     const result = await placeOrder({
+      items: cart, 
       shippingAddress: {
         firstName: values.firstName,
         lastName: values.lastName,

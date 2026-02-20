@@ -141,7 +141,7 @@ export default function useProductForm(productId) {
   const changeStatus = async (newStatus) => {
     setPublishing(true);
     try {
-      await api.post(`/api/products/${productId}/status`, { status: newStatus });
+      await api.patch(`/api/products/${productId}/status`, { status: newStatus });
       updateField('status', newStatus);
       toast.success(newStatus === 'ACTIVE' ? 'Product published' : `Status: ${newStatus}`);
     } catch (err) {

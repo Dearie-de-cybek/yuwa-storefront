@@ -117,68 +117,64 @@ const _formatOrder = (order) => ({
  * 6. Simulate payment
  * 7. Send confirmation email
  */
+// ============================================================
+// 1. CHECKOUT — Create order from DIRECT PAYLOAD items
+// ============================================================
 const checkout = async (userId, data) => {
-  const { shippingAddress, shippingMethod, customerPhone, promotionCode } = data;
+  // 1. Extract items directly from the payload instead of querying the DB cart
+  const { items, shippingAddress, shippingMethod, customerPhone, promotionCode } = data;
 
   if (!shippingAddress) return { error: 'missing_address' };
+  if (!items || !Array.isArray(items) || items.length === 0) return { error: 'empty_cart' };
 
-  // 1. Get cart with full variant + product data
-  const cart = await prisma.cart.findUnique({
-    where: { userId },
-    include: {
-      items: {
-        include: {
-          variant: {
-            include: {
-              product: {
-                include: { media: { where: { position: 0 }, take: 1 } },
-              },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (!cart || cart.items.length === 0) return { error: 'empty_cart' };
-
-  // 2. Verify stock and build line items
+  // 2. Verify stock and build line items securely from DB
   const stockErrors = [];
   const lineItems = [];
 
-  for (const cartItem of cart.items) {
-    const variant = cartItem.variant;
-    const product = variant.product;
+  for (const item of items) {
+    // SECURITY: Always fetch the actual variant and product from the DB 
+    // to prevent users from altering prices in the frontend payload.
+    const dbVariant = await prisma.variant.findUnique({
+      where: { id: item.variant.id },
+      include: {
+        product: {
+          include: { media: { where: { position: 0 }, take: 1 } },
+        },
+      },
+    });
 
-    if (variant.stock < cartItem.quantity) {
+    if (!dbVariant) continue; // Skip invalid variants
+    const product = dbVariant.product;
+
+    if (dbVariant.stock < item.quantity) {
       stockErrors.push({
         product: product.name,
-        variant: `${variant.color} / ${variant.size}`,
-        requested: cartItem.quantity,
-        available: variant.stock,
+        variant: `${dbVariant.color} / ${dbVariant.size}`,
+        requested: item.quantity,
+        available: dbVariant.stock,
       });
       continue;
     }
 
-    // Resolve price: variant override or product base price
-    const unitPrice = variant.price ? parseFloat(variant.price) : parseFloat(product.price);
+    // Resolve true price from database
+    const unitPrice = dbVariant.price ? parseFloat(dbVariant.price) : parseFloat(product.price);
 
     lineItems.push({
-      variantId: variant.id,
+      variantId: dbVariant.id,
       productId: product.id,
-      quantity: cartItem.quantity,
+      quantity: item.quantity,
       price: unitPrice,
       productName: product.name,
-      variantColor: variant.color,
-      variantSize: variant.size,
-      variantSku: variant.sku,
+      variantColor: dbVariant.color,
+      variantSize: dbVariant.size,
+      variantSku: dbVariant.sku,
       imageUrl: product.media[0]?.url || null,
     });
   }
 
   if (stockErrors.length > 0) return { error: 'insufficient_stock', details: stockErrors };
 
-  // 3. Calculate totals
+  // 3. Calculate totals (using the secure DB prices)
   const subtotal = lineItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const shippingCost = _calculateShipping(shippingMethod, subtotal);
   let discount = 0;
@@ -198,7 +194,6 @@ const checkout = async (userId, data) => {
   const order = await prisma.$transaction(async (tx) => {
     const orderNumber = await _generateOrderNumber();
 
-    // Get user email
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: { email: true },
@@ -252,8 +247,8 @@ const checkout = async (userId, data) => {
       );
     }
 
-    // C. Clear cart
-    await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+    // C. Clear the database cart (just to keep things tidy if they had items synced there)
+    await tx.cart.deleteMany({ where: { userId } });
 
     // D. Record promotion usage
     if (appliedPromotion) {
@@ -281,7 +276,7 @@ const checkout = async (userId, data) => {
     return created;
   });
 
-  // 5. Simulate payment (async, don't block response)
+  // 5. Simulate payment
   _simulatePayment(order.id);
 
   return { order: _formatOrder(order) };
