@@ -1,206 +1,247 @@
 import { useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { ArrowRight, ArrowUpRight } from 'lucide-react';
-import aboutImage from '../../assets/images/about.jpg';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
-// Re-use the Product Card for "The Edit" section
-import ProductCard from '../../components/product/ProductCard';
+// --- LUXURY ANIMATION EASE ---
+// A custom bezier curve that starts fast but lingers at the end (the "Vogue" effect)
+const luxuryEase = [0.16, 1, 0.3, 1];
 
-// Mock Data for "The Edit"
-const FEATURED_PRODUCTS = [
-  {
-    id: 1,
-    name: "The Zaria Silk Bubu",
-    category: "Luxury Bubu",
-    price: 180,
-    tag: "Best Seller",
-    variants: [{ id: 'v1', colorName: "Emerald", type: 'color', value: '#046c4e', image: 'https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?q=80&w=1000&auto=format&fit=crop' }]
-  },
-  {
-    id: 2,
-    name: "Lagos City Midi",
-    category: "Ready-to-Wear",
-    price: 120,
-    tag: "New",
-    variants: [{ id: 'v1', colorName: "Ankara Print", type: 'pattern', swatchImage: '', image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1000&auto=format&fit=crop' }]
-  },
-  {
-    id: 4,
-    name: "Othello Maxi",
-    category: "Luxury Bubu",
-    price: 210,
-    tag: "Limited",
-    variants: [{ id: 'v1', colorName: "Gold", type: 'color', value: '#D4AF37', image: 'https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=1000' }]
-  }
-];
+const fadeUp = {
+  hidden: { opacity: 0, y: 60 },
+  visible: { opacity: 1, y: 0, transition: { duration: 1.6, ease: luxuryEase } }
+};
 
-const SectionHeader = ({ title, subtitle }) => (
-  <div className="flex justify-between items-end mb-12 px-6 max-w-[1440px] mx-auto">
-    <div>
-      <h2 className="text-3xl md:text-5xl font-serif mb-2">{title}</h2>
-      <p className="text-muted text-sm uppercase tracking-widest">{subtitle}</p>
-    </div>
-    <Link to="/shop/ready-to-wear" className="hidden md:flex items-center gap-2 text-xs uppercase tracking-widest hover:text-accent transition-colors">
-      View All <ArrowRight size={14} />
-    </Link>
-  </div>
-);
+const textReveal = {
+  hidden: { opacity: 0, y: "100%" },
+  visible: { opacity: 1, y: 0, transition: { duration: 1.2, ease: luxuryEase } }
+};
 
 export default function HomePage() {
-  const scrollRef = useRef(null);
-  const { scrollYProgress } = useScroll({ target: scrollRef, offset: ["start end", "end start"] });
-  const y = useTransform(scrollYProgress, [0, 1], [100, -100]); // Parallax effect
+  const containerRef = useRef(null);
+  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
+
+  // Subtle global parallax
+  const slowScroll = useTransform(scrollYProgress, [0, 1], [0, -200]);
 
   return (
-    <div className="bg-secondary min-h-screen">
+    <div ref={containerRef} className="bg-[#FBF9F5] text-[#1A1918] font-sans overflow-hidden selection:bg-[#1A1918] selection:text-[#FBF9F5]">
       
-      {/* 1. HERO SECTION (Full Screen) */}
-      <section className="relative h-screen w-full overflow-hidden">
-        {/* Background Image/Video */}
-        <div className="absolute inset-0">
+      {/* =========================================
+          1. HERO CAMPAIGN
+          Full bleed, cinematic lighting, poetic text.
+      ========================================= */}
+      <section className="relative w-full h-screen overflow-hidden bg-[#1A1918]">
+        {/* Subtle internal image scale for a "breathing" effect */}
+        <motion.div 
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 3, ease: "easeOut" }}
+          className="absolute inset-0 w-full h-full"
+        >
           <img 
-            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=2864&auto=format&fit=crop" 
-            alt="YUWA Hero" 
-            className="w-full h-full object-cover object-top brightness-75"
+            src="/images/hero2.jpg" 
+            alt="YUWA Campaign" 
+            className="w-full h-full object-cover object-[50%_20%] opacity-80"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1A1918]/80 via-transparent to-transparent" />
+        </motion.div>
+
+        <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-12 max-w-[1600px] mx-auto w-full z-10 pb-20 md:pb-32">
+          <div className="overflow-hidden mb-4">
+            <motion.h1 
+              initial="hidden" animate="visible" variants={textReveal}
+              className="font-serif text-5xl md:text-8xl lg:text-[8rem] leading-[0.85] text-[#FBF9F5] tracking-tight"
+            >
+              Rooted in heritage.
+            </motion.h1>
+          </div>
+          <div className="overflow-hidden flex flex-col md:flex-row md:items-end justify-between gap-8">
+            <motion.h1 
+              initial="hidden" animate="visible" variants={textReveal} transition={{ delay: 0.2 }}
+              className="font-serif text-5xl md:text-8xl lg:text-[8rem] leading-[0.85] text-[#FBF9F5] tracking-tight italic font-light"
+            >
+              Worn without borders.
+            </motion.h1>
+            
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1.5 }}>
+              <Link to="/shop/ready-to-wear" className="group flex items-center gap-4 text-[10px] text-[#FBF9F5] uppercase tracking-[0.3em] font-bold border-b border-[#FBF9F5]/30 pb-2 hover:border-[#FBF9F5] transition-colors duration-500">
+                Explore the Collection
+                <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-500" />
+              </Link>
+            </motion.div>
+          </div>
         </div>
-        
-        {/* Overlay Text */}
-        <div className="absolute inset-0 flex flex-col justify-end pb-32 px-6 md:px-12 max-w-[1440px] mx-auto">
+      </section>
+
+      {/* =========================================
+          2. IDENTITY STATEMENT
+          Massive typographic scale, intentional whitespace.
+      ========================================= */}
+      <section className="py-32 md:py-56 px-6 md:px-12 max-w-[1440px] mx-auto relative">
+        <motion.div 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="grid grid-cols-1 md:grid-cols-12 gap-8"
+        >
+          <div className="md:col-span-3">
+            <span className="text-[9px] uppercase tracking-[0.4em] text-[#8B5E34] font-bold">
+              The Manifesto
+            </span>
+          </div>
+          <div className="md:col-span-9 lg:col-span-8">
+            <h2 className="font-serif text-3xl md:text-5xl lg:text-6xl leading-[1.2] tracking-tight text-[#1A1918]">
+              We exist at the intersection of Lagos craftsmanship and global lifestyle. YUWA is not just fashion; it is <span className="italic text-[#8B5E34]">the architecture of modern African identity.</span>
+            </h2>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* =========================================
+          3. EDITORIAL STORY SECTION
+          Broken grid, overlapping images, parallax.
+      ========================================= */}
+      <section className="px-6 md:px-12 max-w-[1600px] mx-auto pb-32 md:pb-48">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-0 items-center">
+          
+          {/* Left Image (Tall) */}
           <motion.div 
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="text-white max-w-2xl"
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+            className="md:col-span-5 md:col-start-1 relative z-10"
           >
-            <span className="block text-sm md:text-base uppercase tracking-[0.3em] mb-4 text-white/80">The New Heritage</span>
-            <h1 className="text-5xl md:text-8xl font-serif mb-8 leading-tight">
-              Modern African <br/> <i className="font-serif text-accent">Luxury</i>
-            </h1>
-            <div className="flex flex-col md:flex-row gap-4">
-              <Link 
-                to="/shop/ready-to-wear" 
-                className="px-8 py-4 bg-white text-primary uppercase tracking-widest text-xs hover:bg-accent hover:text-white transition-colors text-center"
-              >
-                Shop Collection
-              </Link>
-              <Link 
-                to="/custom" 
-                className="px-8 py-4 border border-white text-white uppercase tracking-widest text-xs hover:bg-white hover:text-primary transition-colors text-center"
-              >
-                Custom Design
-              </Link>
+            <div className="aspect-[3/4] overflow-hidden bg-[#EAE8E3]">
+              <img 
+                src="/images/home1.jpg" 
+                alt="Aso-Oke Weaving" 
+                className="w-full h-full object-cover hover:scale-105 transition-transform duration-[3s] ease-out"
+              />
             </div>
+            <p className="mt-6 text-[10px] uppercase tracking-[0.2em] text-[#555]">01. The Craft / Abeokuta</p>
+          </motion.div>
+
+          {/* Right Text Block (Overlapping) */}
+          <motion.div 
+            initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+            className="md:col-span-6 md:col-start-6 lg:col-start-7 bg-[#FBF9F5] md:-ml-24 z-20 md:p-12 relative"
+          >
+            <h3 className="font-serif text-4xl md:text-6xl mb-8 leading-[1.1]">
+              Woven with <br/><span className="italic text-[#8B5E34]">intention.</span>
+            </h3>
+            <p className="text-sm md:text-base leading-relaxed text-[#444] mb-10 max-w-md">
+              Every thread tells a story of diaspora. We partner with multi-generational artisans in Nigeria to hand-dye and weave fabrics that hold the weight of our ancestry, tailored for the pace of your modern life.
+            </p>
+            <Link to="/journal" className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] font-bold border-b border-[#1A1918] pb-1 hover:text-[#8B5E34] hover:border-[#8B5E34] transition-colors duration-500">
+              Read the Journal
+            </Link>
           </motion.div>
         </div>
       </section>
 
-      {/* 2. TICKER TAPE (Marquee) */}
-      <div className="bg-primary text-white py-4 overflow-hidden whitespace-nowrap border-b border-white/10">
-        <div className="animate-marquee inline-block">
-          <span className="mx-8 text-xs uppercase tracking-[0.2em]">Lagos • London • New York • Sydney</span>
-          <span className="mx-8 text-xs uppercase tracking-[0.2em]">Free Express Shipping on Orders Over $250</span>
-          <span className="mx-8 text-xs uppercase tracking-[0.2em]">New Collection: "Omo Ghetto" Drop 1</span>
-          <span className="mx-8 text-xs uppercase tracking-[0.2em]">Lagos • London • New York • Sydney</span>
-        </div>
-      </div>
-
-      {/* 3. CATEGORIES GRID */}
-      <section className="py-24 px-6 max-w-[1440px] mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[800px] md:h-[600px]">
-          
-          {/* Big Item 1 */}
-          <Link to="/shop/bubus" className="relative group overflow-hidden h-full">
-            <img 
-              src="https://unsplash.com/photos/woman-in-ornate-blue-dress-and-headwrap-p5ewDl5mVWc?q=80&w=1000&auto=format&fit=crop" 
-              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-            <div className="absolute bottom-8 left-8 text-white">
-              <h3 className="text-3xl font-serif italic mb-2">The Bubu Edit</h3>
-              <span className="text-xs uppercase tracking-widest border-b border-white pb-1">Explore</span>
-            </div>
-          </Link>
-
-          {/* Stacked Items */}
-          <div className="flex flex-col gap-4 h-full">
-            <Link to="/custom" className="relative group overflow-hidden h-1/2 flex-1">
-              <img 
-                src="https://images.unsplash.com/photo-1560709493-27fef01e913b?q=80&w=1000&auto=format&fit=crop" 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-              <div className="absolute bottom-8 left-8 text-white">
-                <h3 className="text-3xl font-serif italic mb-2">Custom & Bridal</h3>
-                <span className="text-xs uppercase tracking-widest border-b border-white pb-1">Book Consultation</span>
-              </div>
-            </Link>
-            
-            <Link to="/shop/ready-to-wear" className="relative group overflow-hidden h-1/2 flex-1">
-              <img 
-                src="https://images.unsplash.com/photo-1589451397839-49774a3838dc?q=80&w=1000&auto=format&fit=crop" 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-              <div className="absolute bottom-8 left-8 text-white">
-                <h3 className="text-3xl font-serif italic mb-2">Ready to Wear</h3>
-                <span className="text-xs uppercase tracking-widest border-b border-white pb-1">Shop Now</span>
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. THE EDIT (Horizontal Scroll) */}
-      <section className="py-20 bg-white">
-        <SectionHeader title="The Weekend Edit" subtitle="Curated for the diaspora" />
+      {/* =========================================
+          4. CATEGORY PANELS (Not Grids)
+          Massive, full-width alternating editorial blocks.
+      ========================================= */}
+      <section className="w-full flex flex-col gap-4 px-4 md:px-6 pb-32 md:pb-48">
         
-        <div className="overflow-x-auto no-scrollbar px-6">
-          <div className="flex gap-6 w-max max-w-[1440px] mx-auto pb-8">
-            {FEATURED_PRODUCTS.map(product => (
-              <div key={product.id} className="w-[300px] md:w-[350px]">
-                <ProductCard product={product} />
-              </div>
-            ))}
-             {/* "View All" Card */}
-             <Link to="/shop/ready-to-wear" className="w-[300px] md:w-[350px] bg-secondary flex flex-col items-center justify-center gap-4 group hover:bg-primary transition-colors duration-500">
-               <div className="w-16 h-16 rounded-full border border-primary group-hover:border-white flex items-center justify-center">
-                 <ArrowRight size={24} className="text-primary group-hover:text-white" />
-               </div>
-               <span className="font-serif text-xl group-hover:text-white">View All Products</span>
-             </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. BRAND STORY (Parallax) */}
-      <section ref={scrollRef} className="py-32 px-6 max-w-[1440px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-20 items-center overflow-hidden">
-        <div className="order-2 md:order-1">
-          <span className="text-accent text-xs uppercase tracking-[0.2em] mb-6 block">Our Ethos</span>
-          <h2 className="text-4xl md:text-6xl font-serif mb-8 leading-tight">
-            Designed in Lagos. <br/> Worn Worldwide.
-          </h2>
-          <p className="text-lg text-muted leading-relaxed mb-8">
-            YUWA bridges the gap between traditional African aesthetics and modern global fashion. 
-            We source our silks from the markets of Kano and hand-dye our fabrics in Abeokuta, 
-            creating pieces that tell a story of heritage, luxury, and pride.
-          </p>
-          <Link to="/about" className="inline-flex items-center gap-2 text-primary border-b border-primary pb-1 uppercase tracking-widest text-xs hover:text-accent hover:border-accent transition-colors">
-            Read Our Story <ArrowUpRight size={14} />
-          </Link>
-        </div>
-        
-        <div className="relative order-1 md:order-2 h-[600px] bg-gray-200 overflow-hidden">
-          <motion.img 
-            style={{ y }}
-             src={aboutImage}
-            className="w-full h-[120%] object-cover"
-            alt="About YUWA"
+        {/* Panel 1 */}
+        <Link to="/shop/bubus" className="group relative w-full h-[70vh] md:h-[85vh] overflow-hidden flex items-center justify-center bg-[#1A1918]">
+          <img 
+            src="/images/bubus.jpg" 
+            alt="The Bubu Edit" 
+            className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-[2s] ease-out"
           />
+          <div className="relative z-10 text-center pointer-events-none">
+            <span className="block text-[10px] text-[#FBF9F5] tracking-[0.4em] uppercase mb-4">Collection I</span>
+            <h2 className="font-serif text-5xl md:text-8xl text-[#FBF9F5] drop-shadow-lg">The Bubu Edit.</h2>
+          </div>
+        </Link>
+
+        {/* Panel 2 */}
+        <Link to="/custom" className="group relative w-full h-[70vh] md:h-[85vh] overflow-hidden flex items-center justify-center bg-[#1A1918]">
+          <img 
+            src="/images/bridal.jpg" 
+            alt="Bespoke Atelier" 
+            className="absolute inset-0 w-full h-full object-cover object-top opacity-60 group-hover:opacity-40 group-hover:scale-105 transition-all duration-[2s] ease-out"
+          />
+          <div className="relative z-10 text-center pointer-events-none">
+            <span className="block text-[10px] text-[#FBF9F5] tracking-[0.4em] uppercase mb-4">The Atelier</span>
+            <h2 className="font-serif text-5xl md:text-8xl text-[#FBF9F5] italic drop-shadow-lg">Custom & Bridal.</h2>
+          </div>
+        </Link>
+      </section>
+
+      {/* =========================================
+          5. CURATED SHOWCASE ("The Edit")
+          Horizontal, sparse layout. Story over sales.
+      ========================================= */}
+      <section className="py-24 md:py-32 bg-[#EFECE6]">
+        <div className="max-w-[1600px] mx-auto px-6 md:px-12 mb-20 flex justify-between items-end">
+          <h2 className="font-serif text-4xl md:text-6xl">The Director's Cut.</h2>
+          <Link to="/shop/ready-to-wear" className="hidden md:inline-block text-[10px] uppercase tracking-[0.3em] font-bold border-b border-[#1A1918] pb-1 hover:text-[#8B5E34]">
+            View All Pieces
+          </Link>
+        </div>
+
+        {/* Horizontal Scroll Container */}
+        <div className="flex overflow-x-auto hide-scrollbar gap-12 md:gap-24 px-6 md:px-12 pb-12 snap-x">
+          
+          {/* Curated Item 1 */}
+          <div className="min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group">
+            <Link to="/product/1" className="overflow-hidden bg-[#EAE8E3] aspect-[3/4] mb-6">
+              <img src="/images/silk.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" alt="Silk Adire" />
+            </Link>
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-serif text-2xl mb-2">The Lagosian Bubu</h3>
+                <p className="text-xs text-[#555] uppercase tracking-widest">Hand-Dyed Silk</p>
+              </div>
+              <span className="font-serif italic text-lg">₦145,000</span>
+            </div>
+          </div>
+
+          {/* Curated Item 2 */}
+          <div className="min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group mt-12 md:mt-24">
+            <Link to="/product/2" className="overflow-hidden bg-[#EAE8E3] aspect-[3/4] mb-6">
+              <img src="/images/two.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" alt="Aso-Oke Two Piece" />
+            </Link>
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-serif text-2xl mb-2">The Eko Two-Piece</h3>
+                <p className="text-xs text-[#555] uppercase tracking-widest">Woven Aso-Oke</p>
+              </div>
+              <span className="font-serif italic text-lg">₦210,000</span>
+            </div>
+          </div>
+
         </div>
       </section>
 
+      {/* =========================================
+          6. CULTURAL ANCHOR
+          Intimate, dark closing statement.
+      ========================================= */}
+      <section className="bg-[#1A1918] text-[#FBF9F5] py-32 md:py-48 px-6 md:px-12 text-center relative overflow-hidden">
+        {/* Grain/Texture Overlay */}
+        <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/stardust.png")' }} />
+        
+        <motion.div 
+          initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
+          className="max-w-3xl mx-auto relative z-10"
+        >
+          <div className="w-[1px] h-16 bg-[#8B5E34] mx-auto mb-12" />
+          <h2 className="font-serif text-3xl md:text-5xl leading-relaxed mb-12">
+            "To wear YUWA is to carry your history with you, unapologetically, into the rooms where the future is made."
+          </h2>
+          <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#8B5E34]">
+            Made in Nigeria. Worn Globally.
+          </span>
+        </motion.div>
+      </section>
+
+      {/* Required style for horizontal scrollbar hiding */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}} />
     </div>
   );
 }
