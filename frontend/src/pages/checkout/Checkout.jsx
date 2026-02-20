@@ -18,7 +18,7 @@ import StepDelivery from './steps/StepDelivery';
 import StepPayment from './steps/StepPayment';
 import OrderSummary from './OrderSummary';
 import OrderConfirmation from './OrderConfirmation';
-import { checkoutSchema } from './CheckoutSchema';
+import { checkoutSchema } from './CheckoutSchema.js';
 
 export default function Checkout() {
   const navigate = useNavigate();
