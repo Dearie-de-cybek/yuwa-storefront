@@ -13,12 +13,12 @@ import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { useStore } from '../../store/useStore';
 import useCheckout from './useCheckout';
-import { checkoutSchema } from './checkoutSchema';
 import StepInfo from './steps/StepInfo';
 import StepDelivery from './steps/StepDelivery';
 import StepPayment from './steps/StepPayment';
 import OrderSummary from './OrderSummary';
 import OrderConfirmation from './OrderConfirmation';
+import { checkoutSchema } from './CheckoutSchema';
 
 export default function Checkout() {
   const navigate = useNavigate();
