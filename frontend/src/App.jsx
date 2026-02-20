@@ -22,6 +22,8 @@ import ProductEditPage from './pages/admin/ProductEditPage';
 import Checkout from './pages/checkout/Checkout';
 import CustomLanding from './pages/custom/CustomLanding';
 import BookConsultation from './pages/custom/BookConsultation';
+import MyOrders from './pages/account/MyOrders';
+import OrderDetail from './pages/account/OrderDetail';
 
 // Auth
 import { useAuth } from './context/AuthContext';
@@ -50,6 +52,8 @@ export default function App() {
             <Route path="/shop/bubus" element={<Shop />} />
             <Route path="/product/:id" element={<ProductDetails />} />
             <Route path="/account" element={<ProtectedRoute><UserAccount /></ProtectedRoute>} />
+            <Route path="/account/orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
+            <Route path="/account/orders/:id" element={<ProtectedRoute><OrderDetail /></ProtectedRoute>} />
             <Route path="/custom" element={<CustomLanding />} />
             <Route path="/custom/:category" element={<CustomLanding />} />
             <Route path="/custom/book" element={<BookConsultation />} />
