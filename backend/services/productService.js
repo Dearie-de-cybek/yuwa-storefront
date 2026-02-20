@@ -317,7 +317,7 @@ const _formatProductList = (product) => ({
   category: product.category,
   image: product.media[0]?.url || null,
   totalStock: product.variants.reduce((sum, v) => sum + v.stock, 0),
-  variantCount: product.variants.length,
+  variants: product.variants,
   createdAt: product.createdAt,
 });
 
