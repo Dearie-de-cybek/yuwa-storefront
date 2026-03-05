@@ -67,21 +67,30 @@ export default function ProductDetails() {
         const sizes = [...new Set((p.variants || []).map(v => v.size).filter(Boolean))];
 
         // 2. Extract Unique Colors & Map to Images
-        const colorNames = [...new Set((p.variants || []).map(v => v.color).filter(Boolean))];
-        const colors = colorNames.map(colorName => {
-          const variantForColor = p.variants.find(v => v.color === colorName);
-          
-          // If the variant has specific images, use them. Otherwise fallback to main product images
-          const images = variantForColor?.media?.length > 0 
-            ? variantForColor.media.map(m => m.url)
-            : p.media.map(m => m.url);
+      // ... inside fetchProduct try block ...
 
-          return {
-            name: colorName,
-            value: getColorHex(colorName),
-            images: images.length > 0 ? images : ['https://via.placeholder.com/800x1000?text=No+Image']
-          };
-        });
+// 2. Extract Unique Colors/Fabrics & Map to Images
+const colorNames = [...new Set((p.variants || []).map(v => v.color).filter(Boolean))];
+const colors = colorNames.map(colorName => {
+  const variantForColor = p.variants.find(v => v.color === colorName);
+  
+  // Use the variant's media for the gallery
+  const galleryImages = variantForColor?.media?.length > 0 
+    ? variantForColor.media.map(m => m.url)
+    : p.media.map(m => m.url);
+
+  // SWATCH LOGIC: 
+  // Check if this variant has a specific fabric image (from your new Fabric object)
+  // or use the first gallery image as the swatch, or fallback to Hex.
+  const swatchImage = variantForColor?.media?.[0]?.url || null;
+
+  return {
+    name: colorName,
+    value: getColorHex(colorName),
+    swatchImage: swatchImage, // New property
+    images: galleryImages.length > 0 ? galleryImages : ['https://via.placeholder.com/800x1000?text=No+Image']
+  };
+});
 
         // 3. Map Content Sections to Accordions
         const accordions = p.contentSections?.length > 0 
@@ -242,25 +251,38 @@ export default function ProductDetails() {
           </div>
 
           {/* Color Selector */}
-          {product.colors.length > 0 && (
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 block mb-4">
-                Color: <span className="text-black">{selectedColor?.name}</span>
-              </span>
-              <div className="flex gap-4">
-                {product.colors.map((color) => (
-                  <button
-                    key={color.name}
-                    onClick={() => setSelectedColor(color)}
-                    title={color.name}
-                    className={`w-10 h-10 rounded-full border p-[2px] transition-all ${selectedColor?.name === color.name ? 'border-black scale-110' : 'border-transparent hover:scale-110'}`}
-                  >
-                    <div className="w-full h-full rounded-full border border-gray-200 shadow-inner" style={{ backgroundColor: color.value }} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+         {/* Color/Fabric Selector */}
+{product.colors.length > 0 && (
+  <div>
+    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 block mb-4">
+      {/* Dynamic Label */}
+      Material / Color: <span className="text-black">{selectedColor?.name}</span>
+    </span>
+    <div className="flex flex-wrap gap-4">
+      {product.colors.map((color) => (
+        <button
+          key={color.name}
+          onClick={() => setSelectedColor(color)}
+          title={color.name}
+          className={`w-12 h-12 rounded-full border p-[2px] transition-all ${
+            selectedColor?.name === color.name 
+              ? 'border-black scale-110 shadow-md' 
+              : 'border-transparent hover:scale-110'
+          }`}
+        >
+          <div 
+            className="w-full h-full rounded-full border border-gray-200 shadow-inner bg-cover bg-center" 
+            style={{ 
+              backgroundColor: color.value,
+              // If swatchImage exists, it overrides the background color
+              backgroundImage: color.swatchImage ? `url(${color.swatchImage})` : 'none' 
+            }} 
+          />
+        </button>
+      ))}
+    </div>
+  </div>
+)}
 
           {/* Size Selector */}
           {product.sizes.length > 0 && (
