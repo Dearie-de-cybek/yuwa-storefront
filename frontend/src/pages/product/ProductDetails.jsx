@@ -71,23 +71,29 @@ export default function ProductDetails() {
 
 // 2. Extract Unique Colors/Fabrics & Map to Images
 const colorNames = [...new Set((p.variants || []).map(v => v.color).filter(Boolean))];
+
 const colors = colorNames.map(colorName => {
-  const variantForColor = p.variants.find(v => v.color === colorName);
+  // Find all variants that share this color (e.g., Red-S, Red-M, Red-L)
+  const variantsWithThisColor = p.variants.filter(v => v.color === colorName);
   
-  // Use the variant's media for the gallery
-  const galleryImages = variantForColor?.media?.length > 0 
-    ? variantForColor.media.map(m => m.url)
+  // Pick the first variant to extract the "Material/Fabric" image
+  const primaryVariant = variantsWithThisColor[0];
+
+  // Logic for the Main Gallery images for this color
+  const galleryImages = primaryVariant?.media?.length > 0 
+    ? primaryVariant.media.map(m => m.url)
     : p.media.map(m => m.url);
 
-  // SWATCH LOGIC: 
-  // Check if this variant has a specific fabric image (from your new Fabric object)
-  // or use the first gallery image as the swatch, or fallback to Hex.
-  const swatchImage = variantForColor?.media?.[0]?.url || null;
+  // Logic for the Swatch (The small circle)
+  // We use the first image attached to the variant as the "Fabric" preview
+  const swatchImage = primaryVariant?.media?.length > 0 
+    ? primaryVariant.media[0].url 
+    : null;
 
   return {
     name: colorName,
-    value: getColorHex(colorName),
-    swatchImage: swatchImage, // New property
+    value: getColorHex(colorName), // Fallback hex
+    swatchImage: swatchImage,      // Actual fabric image from backend
     images: galleryImages.length > 0 ? galleryImages : ['https://via.placeholder.com/800x1000?text=No+Image']
   };
 });
@@ -259,28 +265,24 @@ const colors = colorNames.map(colorName => {
       Material / Color: <span className="text-black">{selectedColor?.name}</span>
     </span>
     <div className="flex flex-wrap gap-4">
-      {product.colors.map((color) => (
-        <button
-          key={color.name}
-          onClick={() => setSelectedColor(color)}
-          title={color.name}
-          className={`w-12 h-12 rounded-full border p-[2px] transition-all ${
-            selectedColor?.name === color.name 
-              ? 'border-black scale-110 shadow-md' 
-              : 'border-transparent hover:scale-110'
-          }`}
-        >
-          <div 
-            className="w-full h-full rounded-full border border-gray-200 shadow-inner bg-cover bg-center" 
-            style={{ 
-              backgroundColor: color.value,
-              // If swatchImage exists, it overrides the background color
-              backgroundImage: color.swatchImage ? `url(${color.swatchImage})` : 'none' 
-            }} 
-          />
-        </button>
-      ))}
-    </div>
+  {product.colors.map((color) => (
+    <button
+      key={color.name}
+      onClick={() => setSelectedColor(color)}
+      className={`w-12 h-12 rounded-full border p-0.5 transition-all ${
+        selectedColor?.name === color.name ? 'border-black scale-110' : 'border-transparent'
+      }`}
+    >
+      <div 
+        className="w-full h-full rounded-full border border-gray-200 bg-cover bg-center" 
+        style={{ 
+          backgroundColor: color.value, // Fallback if image fails
+          backgroundImage: color.swatchImage ? `url(${color.swatchImage})` : 'none',
+        }} 
+      />
+    </button>
+  ))}
+</div>
   </div>
 )}
 

@@ -344,12 +344,13 @@ const _formatProductDetail = (product) => ({
     size: v.size,
     price: v.price ? parseFloat(v.price) : null,
     stock: v.stock,
-    weight: v.weight ? parseFloat(v.weight) : null,
+    media: v.media.map((m) => ({ 
+      id: m.id, 
+      url: m.url, 
+      altText: m.altText, 
+      type: m.type 
+    })),
     attributes: v.attributes.reduce((acc, a) => { acc[a.key] = a.value; return acc; }, {}),
-    media: v.media.map((m) => ({ id: m.id, url: m.url, altText: m.altText, type: m.type })),
-  })),
-  contentSections: product.contentSections.map((s) => ({
-    id: s.id, type: s.type, title: s.title, content: s.content, position: s.position,
   })),
   tags: product.tags.map((pt) => ({ id: pt.tag.id, name: pt.tag.name, slug: pt.tag.slug })),
   collections: product.collections.map((pc) => pc.collection),

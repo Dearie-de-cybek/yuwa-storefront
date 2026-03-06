@@ -125,30 +125,39 @@ export const useStore = create(
        * Push local cart to server. Called on login or when
        * user has items in localStorage from a guest session.
        */
-      syncToServer: async () => {
-        const api = get()._api();
-        if (!api) return;
+syncToServer: async () => {
+  const api = get()._api();
+  if (!api) return;
 
-        const cart = get().cart;
-        if (cart.length === 0) return;
+  const localCart = get().cart;
+  if (localCart.length === 0) return;
 
-        set({ syncing: true });
-        try {
-          // Add each local item to the server cart
-          for (const item of cart) {
-            await api.post('/api/cart/items', {
-              variantId: item.variant.id,
-              quantity: item.quantity,
-            }).catch(() => {
-              // Item might be invalid/out of stock — skip silently
-            });
-          }
-        } catch (err) {
-          console.error('Cart sync to server failed:', err);
-        } finally {
-          set({ syncing: false });
-        }
-      },
+  set({ syncing: true });
+  try {
+    // 1. Wipe the server cart first so we don't get duplicates
+    await api.delete('/api/cart');
+
+    // 2. Use Promise.all to send all items simultaneously and WAIT for all to finish
+    await Promise.all(
+      localCart.map((item) =>
+        api.post('/api/cart/items', {
+          variantId: item.variant.id,
+          quantity: item.quantity,
+        })
+      )
+    );
+    
+    // 3. Optional: Add a tiny delay to allow DB indexing to catch up
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    console.log("✅ Server cart synchronized successfully");
+  } catch (err) {
+    console.error('❌ Cart sync failed:', err);
+    throw err; // This is important so useCheckout knows to stop
+  } finally {
+    set({ syncing: false });
+  }
+},
 
       /**
        * Pull server cart into local state. Called on login
