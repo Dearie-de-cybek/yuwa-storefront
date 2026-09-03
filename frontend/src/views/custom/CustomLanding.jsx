@@ -1,6 +1,8 @@
+'use client';
+
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 // --- LUXURY ANIMATION CONFIG ---
@@ -45,7 +47,7 @@ export default function CustomLanding() {
             We design breathtaking adire and silk garments that command the room and celebrate your heritage.
           </p>
           <Link 
-            to="/custom/book"
+            href="/custom/book"
             className="group inline-flex items-center gap-4 text-[11px] font-bold uppercase tracking-[0.2em] border-b border-[#1A1A1A] pb-1 hover:text-[#8C6D46] hover:border-[#8C6D46] transition-colors duration-500"
           >
             Enter the Atelier
@@ -96,7 +98,7 @@ export default function CustomLanding() {
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
             className="md:col-span-5 relative group cursor-pointer"
           >
-            <Link to="/custom/prom" className="block relative h-[80vh] overflow-hidden">
+            <Link href="/custom/prom" className="block relative h-[80vh] overflow-hidden">
               <img src="/images/prom.jpg" className="w-full h-full object-cover transition-transform duration-[2000ms] ease-out group-hover:scale-105" alt="Prom & Graduation" />
             </Link>
             <div className="absolute top-1/2 -translate-y-1/2 -right-8 md:-right-24 z-10 pointer-events-none">
@@ -115,7 +117,7 @@ export default function CustomLanding() {
               <span className="block text-[10px] tracking-[0.2em] text-[#8C6D46] mb-2">02</span>
               <h3 className="font-serif text-4xl md:text-6xl text-[#1A1A1A] bg-[#FAF9F6] py-2 pl-4">Wedding<br/>Guest.</h3>
             </div>
-            <Link to="/custom/wedding" className="block relative h-[60vh] overflow-hidden">
+            <Link href="/custom/wedding" className="block relative h-[60vh] overflow-hidden">
               <img src="/images/wedding-guest.jpg" className="w-full h-full object-cover object-top transition-transform duration-[2000ms] ease-out group-hover:scale-105" alt="Wedding Guest" />
             </Link>
           </motion.div>
@@ -125,7 +127,7 @@ export default function CustomLanding() {
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
             className="md:col-span-8 md:col-start-3 mt-10 md:mt-32 relative group cursor-pointer"
           >
-            <Link to="/custom/dinner" className="block relative h-[70vh] overflow-hidden">
+            <Link href="/custom/dinner" className="block relative h-[70vh] overflow-hidden">
               <img src="/images/dinner.jpg" className="w-full h-full object-cover object-top transition-transform duration-[2000ms] ease-out group-hover:scale-105" alt="Dinner and Gala" />
             </Link>
             <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 text-center w-full pointer-events-none">
@@ -204,7 +206,7 @@ export default function CustomLanding() {
                 A 50% non-refundable deposit is required to commence pattern drafting.
               </div>
               <div className="pt-8">
-                <Link to="/custom/book" className="text-xs font-bold uppercase tracking-[0.2em] border-b border-[#FAF9F6] pb-1 hover:text-[#B8860B] hover:border-[#B8860B] transition-colors duration-300">
+                <Link href="/custom/book" className="text-xs font-bold uppercase tracking-[0.2em] border-b border-[#FAF9F6] pb-1 hover:text-[#B8860B] hover:border-[#B8860B] transition-colors duration-300">
                   Secure Your Slot
                 </Link>
               </div>

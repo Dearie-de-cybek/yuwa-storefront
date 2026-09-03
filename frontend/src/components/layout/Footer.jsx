@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Instagram, Facebook, Twitter, ArrowRight } from 'lucide-react';
 
 export default function Footer() {
@@ -33,10 +33,10 @@ export default function Footer() {
           <div>
             <h4 className="text-xs uppercase tracking-widest text-gray-500 mb-6">Shop</h4>
             <ul className="space-y-4 text-sm text-gray-300">
-              <li><Link to="/shop/ready-to-wear" className="hover:text-white transition-colors">Ready to Wear</Link></li>
-              <li><Link to="/shop/bubus" className="hover:text-white transition-colors">Bùbús</Link></li>
-              <li><Link to="/custom" className="hover:text-white transition-colors">Custom Creations</Link></li>
-              <li><Link to="/shop/gift-cards" className="hover:text-white transition-colors">Gift Cards</Link></li>
+              <li><Link href="/shop/ready-to-wear" className="hover:text-white transition-colors">Ready to Wear</Link></li>
+              <li><Link href="/shop/bubus" className="hover:text-white transition-colors">Bùbús</Link></li>
+              <li><Link href="/custom" className="hover:text-white transition-colors">Custom Creations</Link></li>
+              <li><Link href="/shop/gift-cards" className="hover:text-white transition-colors">Gift Cards</Link></li>
             </ul>
           </div>
 
@@ -44,10 +44,10 @@ export default function Footer() {
           <div>
             <h4 className="text-xs uppercase tracking-widest text-gray-500 mb-6">Support</h4>
             <ul className="space-y-4 text-sm text-gray-300">
-              <li><Link to="/track-order" className="hover:text-white transition-colors">Track Order</Link></li>
-              <li><Link to="/returns" className="hover:text-white transition-colors">Returns & Exchanges</Link></li>
-              <li><Link to="/size-guide" className="hover:text-white transition-colors">Size Guide</Link></li>
-              <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+              <li><Link href="/track-order" className="hover:text-white transition-colors">Track Order</Link></li>
+              <li><Link href="/returns" className="hover:text-white transition-colors">Returns & Exchanges</Link></li>
+              <li><Link href="/size-guide" className="hover:text-white transition-colors">Size Guide</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
             </ul>
           </div>
         </div>

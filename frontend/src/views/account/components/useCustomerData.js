@@ -1,9 +1,11 @@
+'use client';
+
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useAuth } from '../../../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function useCustomerData() {
   const { token, user, setUser } = useAuth(); // We need setUser to update local profile state

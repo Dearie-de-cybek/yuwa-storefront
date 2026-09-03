@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+'use client';
+
+import { useState, useMemo, useRef } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ChevronDown, ChevronUp, Ruler, Truck, ArrowLeft, Loader2 } from 'lucide-react';
+import { Star, ChevronDown, ChevronUp, Ruler, Truck, ArrowLeft } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { toast } from 'sonner'; 
-import axios from 'axios';
+import { toast } from 'sonner';
 
 // Components
 import SizeGuideModal from '../../components/product/SizeGuideModal';
@@ -33,103 +34,52 @@ const getColorHex = (colorName) => {
   return found ? found.value : '#cccccc';
 };
 
-export default function ProductDetails() {
-  const { id } = useParams();
+// Transform the productService detail shape into the view model.
+function transform(p) {
+  const rawVariants = p.variants || [];
+  const sizes = [...new Set(rawVariants.map(v => v.size).filter(Boolean))];
+  const colorNames = [...new Set(rawVariants.map(v => v.color).filter(Boolean))];
+
+  const colors = colorNames.map(colorName => {
+    const variantsWithThisColor = rawVariants.filter(v => v.color === colorName);
+    const primaryVariant = variantsWithThisColor[0];
+    const galleryImages = primaryVariant?.media?.length > 0
+      ? primaryVariant.media.map(m => m.url)
+      : (p.media || []).map(m => m.url);
+    const swatchImage = primaryVariant?.media?.length > 0 ? primaryVariant.media[0].url : null;
+    return {
+      name: colorName,
+      value: getColorHex(colorName),
+      swatchImage,
+      images: galleryImages.length > 0 ? galleryImages : ['https://via.placeholder.com/800x1000?text=No+Image'],
+    };
+  });
+
+  const accordions = p.contentSections?.length > 0
+    ? p.contentSections.map(sec => ({ title: sec.title, content: sec.content }))
+    : [
+        { title: "Product Details", content: p.description || "No details provided." },
+        { title: "Shipping & Returns", content: "• Free express shipping on orders over ₦250,000. \n• Returns accepted within 14 days of delivery." },
+      ];
+
+  return {
+    product: { id: p.id, name: p.name, price: p.price, description: p.description, sizes, colors, accordions },
+    rawVariants,
+  };
+}
+
+export default function ProductDetails({ detail }) {
   const { addToCart } = useStore();
   const reviewsRef = useRef(null);
 
-  // --- STATE ---
-  const [product, setProduct] = useState(null);
-  const [rawVariants, setRawVariants] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
+  const { product, rawVariants } = useMemo(() => transform(detail), [detail]);
+  const id = product.id;
+  const category = detail.category?.name;
 
-  const [selectedColor, setSelectedColor] = useState(null);
-  const [selectedSize, setSelectedSize] = useState(null); 
-  const [activeAccordion, setActiveAccordion] = useState(0); // Open first accordion by default
+  const [selectedColor, setSelectedColor] = useState(product.colors[0] || null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  const [activeAccordion, setActiveAccordion] = useState(0);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-
-  // --- FETCH PRODUCT ---
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    
-    const fetchProduct = async () => {
-      setLoading(true);
-      setError(false);
-      try {
-        const res = await axios.get(`http://localhost:5001/api/products/${id}`);
-        const p = res.data;
-        
-        // Save raw variants to find the exact ID later for checkout
-        setRawVariants(p.variants || []);
-
-        // 1. Extract Unique Sizes
-        const sizes = [...new Set((p.variants || []).map(v => v.size).filter(Boolean))];
-
-        // 2. Extract Unique Colors & Map to Images
-      // ... inside fetchProduct try block ...
-
-// 2. Extract Unique Colors/Fabrics & Map to Images
-const colorNames = [...new Set((p.variants || []).map(v => v.color).filter(Boolean))];
-
-const colors = colorNames.map(colorName => {
-  // Find all variants that share this color (e.g., Red-S, Red-M, Red-L)
-  const variantsWithThisColor = p.variants.filter(v => v.color === colorName);
-  
-  // Pick the first variant to extract the "Material/Fabric" image
-  const primaryVariant = variantsWithThisColor[0];
-
-  // Logic for the Main Gallery images for this color
-  const galleryImages = primaryVariant?.media?.length > 0 
-    ? primaryVariant.media.map(m => m.url)
-    : p.media.map(m => m.url);
-
-  // Logic for the Swatch (The small circle)
-  // We use the first image attached to the variant as the "Fabric" preview
-  const swatchImage = primaryVariant?.media?.length > 0 
-    ? primaryVariant.media[0].url 
-    : null;
-
-  return {
-    name: colorName,
-    value: getColorHex(colorName), // Fallback hex
-    swatchImage: swatchImage,      // Actual fabric image from backend
-    images: galleryImages.length > 0 ? galleryImages : ['https://via.placeholder.com/800x1000?text=No+Image']
-  };
-});
-
-        // 3. Map Content Sections to Accordions
-        const accordions = p.contentSections?.length > 0 
-          ? p.contentSections.map(sec => ({ title: sec.title, content: sec.content }))
-          : [
-              { title: "Product Details", content: p.description || "No details provided." },
-              { title: "Shipping & Returns", content: "• Free express shipping on orders over ₦250,000. \n• Returns accepted within 14 days of delivery." }
-            ];
-
-        // 4. Build Final Product Object
-        const formattedProduct = {
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          description: p.description,
-          sizes,
-          colors,
-          accordions
-        };
-
-        setProduct(formattedProduct);
-        if (formattedProduct.colors.length > 0) setSelectedColor(formattedProduct.colors[0]);
-
-      } catch (err) {
-        console.error("Failed to fetch product:", err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProduct();
-  }, [id]);
 
   const scrollToReviews = () => {
     reviewsRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -156,11 +106,11 @@ const colors = colorNames.map(colorName => {
     }
 
     addToCart(
-      { 
-        id: product.id, 
-        name: product.name, 
+      {
+        id: product.id,
+        name: product.name,
         price: exactVariant.price || product.price // Use variant price override if exists
-      }, 
+      },
       {
         id: exactVariant.id, // THE CRUCIAL FIX FOR CHECKOUT
         color: selectedColor.name,
@@ -176,51 +126,29 @@ const colors = colorNames.map(colorName => {
     });
   };
 
-  // --- LOADING & ERROR STATES ---
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-32 flex flex-col items-center justify-center bg-white">
-        <Loader2 className="animate-spin text-gray-300 mb-4" size={32} />
-        <p className="font-serif text-sm tracking-[0.2em] uppercase text-gray-400">Loading Masterpiece</p>
-      </div>
-    );
-  }
-
-  if (error || !product) {
-    return (
-      <div className="min-h-screen pt-48 pb-20 px-6 bg-white text-center">
-        <h1 className="text-4xl font-serif mb-4">Piece Not Found</h1>
-        <p className="text-gray-500 mb-8">This garment may have been archived or removed.</p>
-        <Link to="/shop/ready-to-wear" className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 hover:text-amber-700 hover:border-amber-700 transition-colors">
-          Return to Collection
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen pt-32 bg-white selection:bg-black selection:text-white">
-      
+
       {/* 1. TOP SECTION */}
       <div className="px-6 mb-8 max-w-[1440px] mx-auto">
-        <Link to="/shop/ready-to-wear" className="text-xs text-gray-400 hover:text-black flex items-center gap-2 uppercase tracking-widest transition-colors">
+        <Link href="/shop/ready-to-wear" className="text-xs text-gray-400 hover:text-black flex items-center gap-2 uppercase tracking-widest transition-colors">
           <ArrowLeft size={14} /> Back to Shop
         </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 max-w-[1440px] mx-auto px-6 mb-20">
-        
+
         {/* LEFT: GALLERY */}
         <div className="flex flex-col gap-4">
           <div className="w-full aspect-[3/4] bg-gray-50 overflow-hidden">
             <AnimatePresence mode="wait">
-              <motion.img 
+              <motion.img
                 key={selectedColor?.name || 'default'}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.5 }}
-                src={selectedColor?.images[0]} 
+                src={selectedColor?.images[0]}
                 className="w-full h-full object-cover"
                 alt={product.name}
               />
@@ -237,13 +165,13 @@ const colors = colorNames.map(colorName => {
 
         {/* RIGHT: DETAILS */}
         <div className="lg:sticky lg:top-32 h-fit space-y-8">
-          
+
           <div>
             <div className="flex justify-between items-start">
               <h1 className="text-3xl md:text-5xl font-serif mb-3 leading-tight">{product.name}</h1>
               <p className="text-xl md:text-2xl font-serif italic text-gray-700">₦{product.price.toLocaleString()}</p>
             </div>
-            
+
             <button onClick={scrollToReviews} className="flex items-center gap-2 text-sm text-gray-500 mb-8 group">
               <div className="flex text-amber-700">
                 {[1,2,3,4,5].map(s => <Star key={s} size={14} fill="currentColor" />)}
@@ -252,39 +180,37 @@ const colors = colorNames.map(colorName => {
                 (Read Reviews)
               </span>
             </button>
-            
+
             <p className="text-gray-600 leading-relaxed font-light">{product.description}</p>
           </div>
 
-          {/* Color Selector */}
-         {/* Color/Fabric Selector */}
-{product.colors.length > 0 && (
-  <div>
-    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 block mb-4">
-      {/* Dynamic Label */}
-      Material / Color: <span className="text-black">{selectedColor?.name}</span>
-    </span>
-    <div className="flex flex-wrap gap-4">
-  {product.colors.map((color) => (
-    <button
-      key={color.name}
-      onClick={() => setSelectedColor(color)}
-      className={`w-12 h-12 rounded-full border p-0.5 transition-all ${
-        selectedColor?.name === color.name ? 'border-black scale-110' : 'border-transparent'
-      }`}
-    >
-      <div 
-        className="w-full h-full rounded-full border border-gray-200 bg-cover bg-center" 
-        style={{ 
-          backgroundColor: color.value, // Fallback if image fails
-          backgroundImage: color.swatchImage ? `url(${color.swatchImage})` : 'none',
-        }} 
-      />
-    </button>
-  ))}
-</div>
-  </div>
-)}
+          {/* Color/Fabric Selector */}
+          {product.colors.length > 0 && (
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 block mb-4">
+                Material / Color: <span className="text-black">{selectedColor?.name}</span>
+              </span>
+              <div className="flex flex-wrap gap-4">
+                {product.colors.map((color) => (
+                  <button
+                    key={color.name}
+                    onClick={() => setSelectedColor(color)}
+                    className={`w-12 h-12 rounded-full border p-0.5 transition-all ${
+                      selectedColor?.name === color.name ? 'border-black scale-110' : 'border-transparent'
+                    }`}
+                  >
+                    <div
+                      className="w-full h-full rounded-full border border-gray-200 bg-cover bg-center"
+                      style={{
+                        backgroundColor: color.value,
+                        backgroundImage: color.swatchImage ? `url(${color.swatchImage})` : 'none',
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Size Selector */}
           {product.sizes.length > 0 && (
@@ -293,22 +219,22 @@ const colors = colorNames.map(colorName => {
                 <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500">
                   Size
                 </span>
-                <button 
+                <button
                   onClick={() => setIsSizeGuideOpen(true)}
                   className="text-xs text-gray-500 underline flex items-center gap-1 hover:text-black transition-colors"
                 >
                   <Ruler size={14} /> Size Guide
                 </button>
               </div>
-              
+
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
                 {product.sizes.map((size) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
                     className={`py-3 text-sm font-medium border transition-all duration-300
-                      ${selectedSize === size 
-                        ? 'border-black bg-black text-white shadow-md' 
+                      ${selectedSize === size
+                        ? 'border-black bg-black text-white shadow-md'
                         : 'border-gray-200 hover:border-black text-gray-800 bg-white hover:shadow-sm'
                       }`}
                   >
@@ -320,7 +246,7 @@ const colors = colorNames.map(colorName => {
           )}
 
           {/* ADD TO BAG BUTTON */}
-          <button 
+          <button
             onClick={handleAddToCart}
             className="w-full bg-black text-white py-5 text-[10px] font-bold uppercase tracking-[0.3em] hover:bg-amber-900 transition-colors duration-500 shadow-lg hover:shadow-xl mt-4"
           >
@@ -340,7 +266,7 @@ const colors = colorNames.map(colorName => {
           <div className="border-t border-gray-200 pt-6 mt-12">
             {product.accordions.map((item, idx) => (
               <div key={idx} className="border-b border-gray-200">
-                <button 
+                <button
                   onClick={() => setActiveAccordion(activeAccordion === idx ? null : idx)}
                   className="w-full py-5 flex justify-between items-center hover:text-amber-700 transition-colors group"
                 >
@@ -349,7 +275,7 @@ const colors = colorNames.map(colorName => {
                 </button>
                 <AnimatePresence>
                   {activeAccordion === idx && (
-                    <motion.div 
+                    <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
@@ -368,10 +294,10 @@ const colors = colorNames.map(colorName => {
       </div>
 
       <div ref={reviewsRef}>
-        <ReviewsSection />
+        <ReviewsSection productId={id} />
       </div>
 
-      <RelatedProducts />
+      <RelatedProducts currentId={id} category={category} />
       <SizeGuideModal isOpen={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} />
     </div>
   );

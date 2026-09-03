@@ -1,5 +1,7 @@
+'use client';
+
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useRouter } from 'next/navigation';
 import AdminLayout from '../admin/AdminLayout';
 import useProductForm from './components/product-edit/useProductForm';
 import GeneralTab from './components/product-edit/GeneralTab';
@@ -19,7 +21,7 @@ const TABS = [
 
 export default function ProductEditPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('general');
 
   const {
@@ -52,7 +54,7 @@ export default function ProductEditPage() {
           status={form.status}
           saving={saving}
           publishing={publishing}
-          onBack={() => navigate('/admin/products')}
+          onBack={() => router.push('/admin/products')}
           onPublish={() => changeStatus('ACTIVE')}
           onUnpublish={() => changeStatus('DRAFT')}
         />

@@ -1,3 +1,5 @@
+'use client';
+
 // ============================================================
 // useCheckout — Manages checkout against backend API
 // Updated to send cart items directly to match orderService.js
@@ -8,7 +10,7 @@ import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useStore } from '../../store/useStore';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function useCheckout() {
   const { token } = useAuth();

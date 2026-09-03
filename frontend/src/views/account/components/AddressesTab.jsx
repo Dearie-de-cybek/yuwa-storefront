@@ -1,3 +1,5 @@
+'use client';
+
 import { MapPin, Plus, Trash2 } from 'lucide-react';
 
 export default function AddressesTab({ addresses, onDelete, onAdd }) {

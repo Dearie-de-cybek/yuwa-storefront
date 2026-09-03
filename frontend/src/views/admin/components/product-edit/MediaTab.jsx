@@ -1,6 +1,11 @@
-import { useRef } from 'react';
+'use client';
+
+import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Section, IconButton, AddButton } from './ui';
-import { Plus, Trash2, ChevronUp, ChevronDown, Image as ImageIcon, Film, Upload } from 'lucide-react';
+import { Plus, Trash2, ChevronUp, ChevronDown, Image as ImageIcon, Film, Upload, Loader2 } from 'lucide-react';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function MediaTab({ media, updateField }) {
 
@@ -32,21 +37,43 @@ export default function MediaTab({ media, updateField }) {
     updateField('media', arr.map((m, i) => ({ ...m, position: i })));
   };
 
-  // ── File picker handler ──
-  // For now, this creates an object URL preview.
-  // In production, you'd upload to your CDN and use the returned URL.
+  // ── File picker handler — uploads to Cloudinary via /api/upload ──
   const fileInputRef = useRef(null);
-  const handleFileSelect = (e) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileSelect = async (e) => {
     const files = Array.from(e.target.files || []);
-    files.forEach((file) => {
-      const isVideo = file.type.startsWith('video/');
-      // In production: upload file to CDN, get back URL
-      // For dev: use object URL as preview
-      const url = URL.createObjectURL(file);
-      addMedia(url, isVideo ? 'VIDEO' : 'IMAGE');
-    });
-    // Reset input so the same file can be re-selected
-    e.target.value = '';
+    e.target.value = ''; // allow re-selecting the same file
+    if (files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      files.forEach((file) => fd.append('file', file));
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const res = await fetch(`${API_URL}/api/upload`, {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: fd,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Upload failed');
+
+      const additions = data.files.map((f, i) => ({
+        url: f.url,
+        altText: '',
+        type: f.type,
+        position: media.length + i,
+      }));
+      updateField('media', [...media, ...additions]);
+      toast.success(`${data.files.length} file${data.files.length !== 1 ? 's' : ''} uploaded`);
+    } catch (err) {
+      toast.error(err.message || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -68,14 +95,15 @@ export default function MediaTab({ media, updateField }) {
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        className="w-full border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center gap-3 hover:border-gray-400 hover:bg-gray-50/50 transition-colors group"
+        disabled={uploading}
+        className="w-full border-2 border-dashed border-gray-200 rounded-xl p-8 flex flex-col items-center gap-3 hover:border-gray-400 hover:bg-gray-50/50 transition-colors group disabled:opacity-60 disabled:cursor-not-allowed"
       >
         <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-          <Upload size={20} className="text-gray-400" />
+          {uploading ? <Loader2 size={20} className="text-gray-400 animate-spin" /> : <Upload size={20} className="text-gray-400" />}
         </div>
         <div className="text-center">
-          <p className="text-sm font-medium text-gray-600">Click to upload images or video</p>
-          <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP, MP4 — Max 10MB</p>
+          <p className="text-sm font-medium text-gray-600">{uploading ? 'Uploading to Cloudinary…' : 'Click to upload images or video'}</p>
+          <p className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP, MP4 — stored on Cloudinary</p>
         </div>
       </button>
 

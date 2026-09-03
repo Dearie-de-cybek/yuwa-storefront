@@ -1,12 +1,14 @@
+'use client';
+
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext();
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Configure Axios to always send token if we have it
@@ -16,13 +18,16 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common['Authorization'];
   }
 
+  // Hydrate auth from localStorage on the client only (SSR-safe)
   useEffect(() => {
+    const storedToken = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+    if (storedToken) {
+      setToken(storedToken);
+      if (storedUser) setUser(JSON.parse(storedUser));
     }
     setLoading(false);
-  }, [token]);
+  }, []);
 
   // 1. LOGIN FUNCTION
   const login = async (email, password) => {
@@ -79,7 +84,7 @@ export const AuthProvider = ({ children }) => {
   // 4. RETURN (Must be at the bottom, after all functions are defined)
   return (
     <AuthContext.Provider value={{ user, token, login, register, logout, loading, setUser }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };

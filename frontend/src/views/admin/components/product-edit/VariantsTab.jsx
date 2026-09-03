@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Section, Field, IconButton } from './ui';
 import { Plus, Trash2, ChevronDown, ChevronUp, Copy, Grid3X3, Palette, Scissors, Image, X, UploadCloud } from 'lucide-react';

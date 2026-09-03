@@ -1,6 +1,9 @@
+'use client';
+
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Package, MapPin, User, LogOut, Heart, CreditCard, Loader2, ArrowRight } from 'lucide-react';
 
 // Hooks
@@ -22,7 +25,7 @@ const MENU = [
 
 export default function UserAccount() {
   const { logout } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('overview');
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false); // Modal State
   
@@ -33,7 +36,7 @@ export default function UserAccount() {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    router.push('/login');
   };
 
   if (loading) {
@@ -116,7 +119,7 @@ export default function UserAccount() {
                     <h2 className="font-serif text-3xl md:text-4xl mb-4 leading-tight">
                       Elevate your style with the latest Adire drops.
                     </h2>
-                    <Link to="/shop/ready-to-wear" className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest rounded hover:bg-gray-200 transition-colors">
+                    <Link href="/shop/ready-to-wear" className="inline-flex items-center gap-2 bg-white text-black px-6 py-3 text-xs font-bold uppercase tracking-widest rounded hover:bg-gray-200 transition-colors">
                       Shop Now <ArrowRight size={16} />
                     </Link>
                   </div>
@@ -157,7 +160,7 @@ export default function UserAccount() {
                  <Heart size={48} className="mx-auto text-gray-200 mb-4" />
                  <h3 className="font-serif text-xl">Your wishlist is empty</h3>
                  <p className="text-gray-500 mt-2 mb-6 text-sm">Save items you love for later.</p>
-                 <Link to="/shop/ready-to-wear" className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1">
+                 <Link href="/shop/ready-to-wear" className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1">
                    Browse Collection
                  </Link>
                </div>

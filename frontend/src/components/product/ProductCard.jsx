@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Heart, Check } from 'lucide-react';
 import { useStore } from '../../store/useStore';
@@ -11,8 +13,11 @@ export default function ProductCard({ product }) {
 
   // Connect to Store
   const { wishlist, toggleWishlist, addToCart } = useStore();
-  
-  const isWishlisted = wishlist.includes(product.id);
+
+  // Persisted wishlist hydrates on the client only — guard against mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const isWishlisted = mounted && wishlist.includes(product.id);
 
   const handleQuickAdd = (e) => {
     e.preventDefault(); // Stop navigation
@@ -36,7 +41,7 @@ export default function ProductCard({ product }) {
     >
       {/* 1. IMAGE CONTAINER */}
       <div className="relative aspect-[3/4] overflow-hidden bg-neutral-100 w-full">
-        <Link to={`/product/${product.id}`} className="block h-full w-full">
+        <Link href={`/product/${product.id}`} className="block h-full w-full">
           <AnimatePresence mode='wait'>
             <motion.img
               key={selectedVariant.image}

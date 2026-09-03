@@ -3,14 +3,14 @@
 // ============================================================
 
 import { CheckCircle, Mail, Package, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 export default function OrderConfirmation({ order }) {
   return (
     <div className="min-h-screen bg-white font-sans">
       {/* Header */}
       <div className="border-b border-border py-6 flex justify-center">
-        <Link to="/" className="font-serif text-2xl tracking-tight">YUWA</Link>
+        <Link href="/" className="font-serif text-2xl tracking-tight">YUWA</Link>
       </div>
 
       <div className="max-w-lg mx-auto px-6 py-16 text-center">
@@ -77,13 +77,13 @@ export default function OrderConfirmation({ order }) {
         {/* Actions */}
         <div className="flex flex-col gap-3">
           <Link
-            to="/account/orders"
+            href="/account/orders"
             className="flex items-center justify-center gap-2 bg-black text-white py-4 uppercase tracking-widest text-xs hover:bg-gray-800 transition-colors"
           >
             <Package size={14} /> View My Orders
           </Link>
           <Link
-            to="/shop"
+            href="/shop"
             className="flex items-center justify-center gap-2 py-4 text-xs uppercase tracking-widest text-gray-500 hover:text-black transition-colors"
           >
             Continue Shopping <ArrowRight size={14} />

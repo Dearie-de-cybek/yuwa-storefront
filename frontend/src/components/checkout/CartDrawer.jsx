@@ -1,8 +1,10 @@
+'use client';
+
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus, Minus, ArrowRight, ShoppingBag, Trash2 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 export default function CartDrawer() {
   // 1. Destructure ALL actions and state clearly
@@ -82,7 +84,7 @@ export default function CartDrawer() {
                   <div key={`${item.id}-${item.variant.id}`} className="flex gap-4 group">
                     {/* Image */}
                     <Link 
-                      to={`/product/${item.id}`} 
+                      href={`/product/${item.id}`} 
                       onClick={closeCartDrawer}
                       className="w-24 h-32 bg-secondary flex-shrink-0 overflow-hidden relative cursor-pointer"
                     >
@@ -94,7 +96,7 @@ export default function CartDrawer() {
                       <div>
                         <div className="flex justify-between items-start">
                           <Link 
-                            to={`/product/${item.id}`}
+                            href={`/product/${item.id}`}
                             onClick={closeCartDrawer} 
                             className="font-serif text-base leading-tight pr-4 hover:text-accent transition-colors"
                           >
@@ -159,7 +161,7 @@ export default function CartDrawer() {
                 <p className="text-xs text-muted mb-6 text-center italic">Shipping & taxes calculated at checkout.</p>
                 
                 <Link 
-                  to="/checkout"
+                  href="/checkout"
                   onClick={closeCartDrawer}
                   className="w-full bg-primary text-white py-4 flex items-center justify-center gap-3 uppercase tracking-widest text-sm hover:bg-accent hover:gap-4 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl"
                 >

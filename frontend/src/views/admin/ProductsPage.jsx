@@ -1,12 +1,16 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import AdminLayout from '../admin/AdminLayout';
 import { Plus, Search, Edit, Trash2, Loader2, Eye, EyeOff, Star } from 'lucide-react';
+import Skeleton from '../../components/ui/Skeleton';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const STATUS_BADGE = {
   DRAFT:    'bg-yellow-100 text-yellow-800',
@@ -20,7 +24,7 @@ export default function ProductsPage() {
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [search, setSearch] = useState('');
   const { token } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const api = axios.create({
     baseURL: API_URL,
@@ -66,7 +70,7 @@ export default function ProductsPage() {
   const createProductHandler = async () => {
     try {
       const { data } = await api.post('/api/products');
-      navigate(`/admin/product/${data.id}/edit`);
+      router.push(`/admin/product/${data.id}/edit`);
     } catch (error) {
       toast.error('Could not create draft');
     }
@@ -155,8 +159,10 @@ export default function ProductsPage() {
         {/* Table */}
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="p-10 flex justify-center">
-              <Loader2 className="animate-spin text-gray-400" size={24} />
+            <div className="p-6 space-y-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-lg" />
+              ))}
             </div>
           ) : products.length === 0 ? (
             <div className="p-10 text-center text-gray-400">
@@ -234,7 +240,7 @@ export default function ProductsPage() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-1">
                         <Link
-                          to={`/admin/product/${product.id}/edit`}
+                          href={`/admin/product/${product.id}/edit`}
                           className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-md transition-colors"
                         >
                           <Edit size={16} />

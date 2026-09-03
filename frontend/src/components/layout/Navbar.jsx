@@ -1,5 +1,8 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ShoppingBag, Menu, X, Search, User, ChevronDown, ArrowRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
@@ -10,9 +13,13 @@ export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState(null);
-  const location = useLocation();
+  const pathname = usePathname();
   const { toggleCartDrawer, cart } = useStore();
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+  // Avoid SSR/client hydration mismatch for the persisted cart badge.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -20,7 +27,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => setIsOpen(false), [location]);
+  useEffect(() => setIsOpen(false), [pathname]);
 
   const toggleSubmenu = (index) => {
     setActiveSubmenu(activeSubmenu === index ? null : index);
@@ -55,7 +62,7 @@ export default function Navbar() {
             {navStructure.map((item, idx) => (
               <div key={idx} className="relative group">
                 <Link 
-                  to={item.path} 
+                  href={item.path} 
                   className={`flex items-center gap-1 text-sm uppercase tracking-widest font-medium hover:text-accent transition-colors
                     ${item.isSpecial ? 'text-accent' : 'text-primary'}`}
                 >
@@ -81,7 +88,7 @@ export default function Navbar() {
                            {item.children.map((child, cIdx) => (
                              <Link 
                                key={cIdx} 
-                               to={child.path}
+                               href={child.path}
                                className="group/link flex items-center justify-between"
                              >
                                <div>
@@ -124,7 +131,7 @@ export default function Navbar() {
           </button>
 
           {/* CENTER - Logo */}
-          <Link to="/" className="absolute left-1/2 -translate-x-1/2 z-50">
+          <Link href="/" className="absolute left-1/2 -translate-x-1/2 z-50">
             <h1 className={`font-serif text-3xl md:text-4xl tracking-tight font-medium transition-colors duration-300 text-primary`}>
               YUWA
             </h1>
@@ -138,14 +145,14 @@ export default function Navbar() {
           >
             <Search strokeWidth={1.5} size={22} />
           </button>
-            <Link to="/account" className="hidden md:block hover:text-accent transition-colors">
+            <Link href="/account" className="hidden md:block hover:text-accent transition-colors">
               <User strokeWidth={1.5} size={22} />
             </Link>
             <button 
             onClick={toggleCartDrawer}
             className="relative hover:text-accent transition-colors">
               <ShoppingBag strokeWidth={1.5} size={22} />
-              {cartCount > 0 && (
+              {mounted && cartCount > 0 && (
                 <span className="absolute -top-1 -right-2 bg-accent text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">
                   {cartCount}
                 </span>
@@ -186,7 +193,7 @@ export default function Navbar() {
                   <div key={idx}>
                     <div className="flex justify-between items-center">
                       <Link 
-                        to={item.path} 
+                        href={item.path} 
                         className={`text-2xl font-serif ${item.isSpecial ? 'text-accent' : 'text-primary'}`}
                         onClick={() => !item.children && setIsOpen(false)}
                       >
@@ -214,7 +221,7 @@ export default function Navbar() {
                             {item.children.map((child, cIdx) => (
                               <Link 
                                 key={cIdx} 
-                                to={child.path}
+                                href={child.path}
                                 onClick={() => setIsOpen(false)}
                                 className="text-muted text-lg hover:text-accent font-serif italic flex items-center gap-2 group"
                               >
@@ -233,7 +240,7 @@ export default function Navbar() {
               <SearchOverlay isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
 
               <div className="mt-16 pt-8 border-t border-border">
-                <Link to="/account" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 text-primary mb-4">
+                <Link href="/account" onClick={() => setIsOpen(false)} className="flex items-center space-x-3 text-primary mb-4">
                   <User size={20} />
                   <span className="font-medium uppercase tracking-widest text-xs">My Account</span>
                 </Link>

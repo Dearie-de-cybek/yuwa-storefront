@@ -1,3 +1,5 @@
+'use client';
+
 // ============================================================
 // CHECKOUT PAGE — Step orchestrator
 // Uses the existing useStore (not a separate cart store)
@@ -6,7 +8,8 @@
 import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Link, useNavigate } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -21,7 +24,7 @@ import OrderConfirmation from './OrderConfirmation';
 import { checkoutSchema } from './CheckoutSchema.js';
 
 export default function Checkout() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { user, token } = useAuth();
   const cart = useStore((s) => s.cart);
   const { placeOrder, loading: orderLoading, order } = useCheckout();
@@ -52,7 +55,7 @@ export default function Checkout() {
   useEffect(() => {
     if (!token) {
       toast.error('Please log in to checkout');
-      navigate('/login');
+      router.push('/login');
     }
   }, [token]);
 
@@ -116,7 +119,7 @@ export default function Checkout() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-secondary font-sans">
         <p className="text-xl font-serif mb-4">Your bag is empty.</p>
-        <Link to="/shop" className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 hover:text-gray-600">
+        <Link href="/shop" className="text-xs font-bold uppercase tracking-widest border-b border-black pb-1 hover:text-gray-600">
           Return to Shop
         </Link>
       </div>
@@ -150,7 +153,7 @@ export default function Checkout() {
     <div className="min-h-screen bg-white font-sans text-primary">
       {/* Header */}
       <div className="border-b border-border py-6 flex justify-center sticky top-0 bg-white/95 backdrop-blur z-20">
-        <Link to="/" className="font-serif text-2xl tracking-tight">YUWA</Link>
+        <Link href="/" className="font-serif text-2xl tracking-tight">YUWA</Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 max-w-[1200px] mx-auto min-h-screen">
@@ -182,7 +185,7 @@ export default function Checkout() {
                   <ArrowLeft size={16} /> Return
                 </button>
               ) : (
-                <Link to="/cart" className="text-sm text-gray-500 hover:text-black">Return to Bag</Link>
+                <Link href="/cart" className="text-sm text-gray-500 hover:text-black">Return to Bag</Link>
               )}
 
               {step < 3 ? (

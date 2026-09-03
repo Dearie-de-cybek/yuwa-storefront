@@ -1,5 +1,8 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import { 
   LayoutDashboard, ShoppingBag, Users, Tag, 
@@ -9,7 +12,7 @@ import {
 
 export default function AdminLayout({ children }) {
   const { logout, user } = useAuth();
-  const location = useLocation();
+  const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); 
 
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -27,7 +30,7 @@ export default function AdminLayout({ children }) {
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => pathname === path;
 
   return (
     <div className="min-h-screen bg-gray-50 flex font-sans">
@@ -60,7 +63,7 @@ export default function AdminLayout({ children }) {
           {navigation.map((item) => (
             <Link
               key={item.name}
-              to={item.href}
+              href={item.href}
               onClick={() => setIsSidebarOpen(false)} // Close sidebar on click (Mobile)
               className={`flex items-center gap-3 px-4 py-3 text-sm transition-all rounded-md ${
                 isActive(item.href) 
@@ -92,7 +95,7 @@ export default function AdminLayout({ children }) {
               <Menu size={24} />
             </button>
             <h2 className="text-xl font-serif text-gray-800 hidden sm:block">
-              {navigation.find(n => n.href === location.pathname)?.name || 'Dashboard'}
+              {navigation.find(n => n.href === pathname)?.name || 'Dashboard'}
             </h2>
           </div>
 
@@ -150,10 +153,10 @@ export default function AdminLayout({ children }) {
                     <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
                   
-                  <Link to="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary">
+                  <Link href="/admin/settings" className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary">
                     <Settings size={16} /> Store Settings
                   </Link>
-                  <Link to="/account" className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary">
+                  <Link href="/account" className="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary">
                     <User size={16} /> View as Customer
                   </Link>
                   

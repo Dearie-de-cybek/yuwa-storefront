@@ -733,3 +733,15 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
 }
+
+// ============================================================
+// 21. STORE SETTINGS — Single-row store configuration
+// ============================================================
+
+model StoreSetting {
+  id           String   @id @default("singleton")
+  storeName    String   @default("YUWA")
+  currency     String   @default("NGN")
+  supportEmail String   @default("help@yuwa.com")
+  updatedAt    DateTime @updatedAt
+}

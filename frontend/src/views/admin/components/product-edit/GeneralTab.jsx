@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { Section, Field } from './ui';
 import { Star, Plus, ChevronDown } from 'lucide-react';

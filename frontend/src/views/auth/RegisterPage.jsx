@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext'; 
 import { toast } from 'sonner'; 
 import { ArrowRight, Loader2 } from 'lucide-react';
@@ -14,7 +17,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   
   const { register } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,7 +36,7 @@ export default function RegisterPage() {
 
     if (result.success) {
       toast.success("Welcome to YUWA.");
-      navigate('/account'); // Auto-redirect to dashboard
+      router.push('/account'); // Auto-redirect to dashboard
     } else {
       toast.error(result.error);
     }
@@ -115,7 +118,7 @@ export default function RegisterPage() {
 
         <div className="mt-8 text-center border-t border-border pt-6">
           <p className="text-sm text-muted mb-4">Already have an account?</p>
-          <Link to="/login" className="inline-block text-black font-bold uppercase tracking-widest text-xs hover:underline">
+          <Link href="/login" className="inline-block text-black font-bold uppercase tracking-widest text-xs hover:underline">
             Sign In
           </Link>
         </div>

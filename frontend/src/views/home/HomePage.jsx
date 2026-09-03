@@ -1,6 +1,8 @@
+'use client';
+
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
 // --- LUXURY ANIMATION CONFIG ---
@@ -43,7 +45,7 @@ const sliderVariants = {
   }
 };
 
-export default function HomePage() {
+export default function HomePage({ featured = [] }) {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
   
@@ -59,6 +61,21 @@ export default function HomePage() {
   }, []);
 
   const slowScroll = useTransform(scrollYProgress, [0, 1], [0, -200]);
+
+  // Two showcase cards: real featured products, or editorial fallback.
+  const showcase = featured.length
+    ? featured.slice(0, 2).map((p) => ({
+        id: p.id,
+        href: `/product/${p.id}`,
+        image: p.image,
+        name: p.name,
+        sub: p.category?.name || '',
+        price: `₦${Number(p.price).toLocaleString()}`,
+      }))
+    : [
+        { id: 's1', href: '/shop/ready-to-wear', image: '/images/silk.jpg', name: 'The Lagosian Bubu', sub: 'Hand-Dyed Silk', price: '₦145,000' },
+        { id: 's2', href: '/shop/ready-to-wear', image: '/images/two.jpg', name: 'The Eko Two-Piece', sub: 'Woven Aso-Oke', price: '₦210,000' },
+      ];
 
   return (
     <div ref={containerRef} className="bg-[#FBF9F5] text-[#1A1918] font-sans overflow-hidden selection:bg-[#1A1918] selection:text-[#FBF9F5]">
@@ -108,7 +125,7 @@ export default function HomePage() {
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1, duration: 1.5 }}
               className="pointer-events-auto"
             >
-              <Link to="/shop/ready-to-wear" className="group flex items-center gap-4 text-[10px] text-[#FBF9F5] uppercase tracking-[0.3em] font-bold border-b border-[#FBF9F5]/30 pb-2 hover:border-[#FBF9F5] transition-colors duration-500">
+              <Link href="/shop/ready-to-wear" className="group flex items-center gap-4 text-[10px] text-[#FBF9F5] uppercase tracking-[0.3em] font-bold border-b border-[#FBF9F5]/30 pb-2 hover:border-[#FBF9F5] transition-colors duration-500">
                 Explore the Collection
                 <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-500" />
               </Link>
@@ -168,7 +185,7 @@ export default function HomePage() {
             <p className="text-sm md:text-base leading-relaxed text-[#444] mb-10 max-w-md">
               Every thread tells a story of diaspora. We partner with multi-generational artisans in Nigeria to hand-dye and weave fabrics that hold the weight of our ancestry, tailored for the pace of your modern life.
             </p>
-            <Link to="/journal" className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] font-bold border-b border-[#1A1918] pb-1 hover:text-[#8B5E34] hover:border-[#8B5E34] transition-colors duration-500">
+            <Link href="/journal" className="inline-flex items-center gap-3 text-[10px] uppercase tracking-[0.3em] font-bold border-b border-[#1A1918] pb-1 hover:text-[#8B5E34] hover:border-[#8B5E34] transition-colors duration-500">
               Read the Journal
             </Link>
           </motion.div>
@@ -179,7 +196,7 @@ export default function HomePage() {
           4. CATEGORY PANELS
       ========================================= */}
       <section className="w-full flex flex-col gap-4 px-4 md:px-6 pb-32 md:pb-48">
-        <Link to="/shop/bubus" className="group relative w-full h-[70vh] md:h-[85vh] overflow-hidden flex items-center justify-center bg-[#1A1918]">
+        <Link href="/shop/bubus" className="group relative w-full h-[70vh] md:h-[85vh] overflow-hidden flex items-center justify-center bg-[#1A1918]">
           <img 
             src="/images/bubus.jpg" 
             alt="The Bubu Edit" 
@@ -191,7 +208,7 @@ export default function HomePage() {
           </div>
         </Link>
 
-        <Link to="/custom" className="group relative w-full h-[70vh] md:h-[85vh] overflow-hidden flex items-center justify-center bg-[#1A1918]">
+        <Link href="/custom" className="group relative w-full h-[70vh] md:h-[85vh] overflow-hidden flex items-center justify-center bg-[#1A1918]">
           <img 
             src="/images/bridal.jpg" 
             alt="Bespoke Atelier" 
@@ -210,37 +227,26 @@ export default function HomePage() {
       <section className="py-24 md:py-32 bg-[#EFECE6]">
         <div className="max-w-[1600px] mx-auto px-6 md:px-12 mb-20 flex justify-between items-end">
           <h2 className="font-serif text-4xl md:text-6xl">The Director's Cut.</h2>
-          <Link to="/shop/ready-to-wear" className="hidden md:inline-block text-[10px] uppercase tracking-[0.3em] font-bold border-b border-[#1A1918] pb-1 hover:text-[#8B5E34]">
+          <Link href="/shop/ready-to-wear" className="hidden md:inline-block text-[10px] uppercase tracking-[0.3em] font-bold border-b border-[#1A1918] pb-1 hover:text-[#8B5E34]">
             View All Pieces
           </Link>
         </div>
 
         <div className="flex overflow-x-auto hide-scrollbar gap-12 md:gap-24 px-6 md:px-12 pb-12 snap-x">
-          <div className="min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group">
-            <Link to="/product/1" className="overflow-hidden bg-[#EAE8E3] aspect-[3/4] mb-6">
-              <img src="/images/silk.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" alt="Silk Adire" />
-            </Link>
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-serif text-2xl mb-2">The Lagosian Bubu</h3>
-                <p className="text-xs text-[#555] uppercase tracking-widest">Hand-Dyed Silk</p>
+          {showcase.map((item, i) => (
+            <div key={item.id} className={`min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group ${i === 1 ? 'mt-12 md:mt-24' : ''}`}>
+              <Link href={item.href} className="overflow-hidden bg-[#EAE8E3] aspect-[3/4] mb-6">
+                <img src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" alt={item.name} />
+              </Link>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-serif text-2xl mb-2">{item.name}</h3>
+                  <p className="text-xs text-[#555] uppercase tracking-widest">{item.sub}</p>
+                </div>
+                <span className="font-serif italic text-lg">{item.price}</span>
               </div>
-              <span className="font-serif italic text-lg">₦145,000</span>
             </div>
-          </div>
-
-          <div className="min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group mt-12 md:mt-24">
-            <Link to="/product/2" className="overflow-hidden bg-[#EAE8E3] aspect-[3/4] mb-6">
-              <img src="/images/two.jpg" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" alt="Aso-Oke Two Piece" />
-            </Link>
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-serif text-2xl mb-2">The Eko Two-Piece</h3>
-                <p className="text-xs text-[#555] uppercase tracking-widest">Woven Aso-Oke</p>
-              </div>
-              <span className="font-serif italic text-lg">₦210,000</span>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
 

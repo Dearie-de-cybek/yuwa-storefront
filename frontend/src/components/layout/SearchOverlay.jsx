@@ -1,40 +1,10 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Search, ArrowRight, Clock, TrendingUp } from 'lucide-react';
-import { Link } from 'react-router-dom';
-import { useStore } from '../../store/useStore'; // If you want to use global products later
-
-// --- MOCK DATA (Ideally this comes from a global constant or API) ---
-const SEARCH_PRODUCTS = [
-  {
-    id: 1,
-    name: "The Zaria Silk Bubu",
-    category: "Luxury Bubu",
-    price: 180,
-    image: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?q=80&w=200&auto=format&fit=crop"
-  },
-  {
-    id: 2,
-    name: "Lagos City Midi",
-    category: "Ready-to-Wear",
-    price: 120,
-    image: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=200&auto=format&fit=crop"
-  },
-  {
-    id: 3,
-    name: "Adire Wrap Set",
-    category: "Co-ords",
-    price: 155,
-    image: "https://images.unsplash.com/photo-1589451397839-49774a3838dc?q=80&w=200&auto=format&fit=crop"
-  },
-  {
-    id: 4,
-    name: "Othello Maxi",
-    category: "Luxury Bubu",
-    price: 210,
-    image: "https://images.unsplash.com/photo-1566174053879-31528523f8ae?q=80&w=200&auto=format&fit=crop"
-  }
-];
+import Link from 'next/link';
+import axios from 'axios';
 
 const SUGGESTIONS = ["Silk Bubu", "Wedding Guest", "Prom Dress", "Adire", "Gift Card"];
 
@@ -54,21 +24,32 @@ export default function SearchOverlay({ isOpen, onClose }) {
     return () => { document.body.style.overflow = 'unset'; };
   }, [isOpen]);
 
-  // Real-time Search Logic
+  // Debounced product search against the API
   useEffect(() => {
     if (query.trim() === "") {
       setResults([]);
       return;
     }
-    
-    const searchTerms = query.toLowerCase().split(" ");
-    const filtered = SEARCH_PRODUCTS.filter(product => {
-      const nameMatch = searchTerms.every(term => product.name.toLowerCase().includes(term));
-      const catMatch = product.category.toLowerCase().includes(query.toLowerCase());
-      return nameMatch || catMatch;
-    });
 
-    setResults(filtered);
+    const t = setTimeout(async () => {
+      try {
+        const { data } = await axios.get('/api/products', {
+          params: { search: query.trim(), status: 'ACTIVE', limit: 8 },
+        });
+        const list = (data.products || []).map((p) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category?.name || '',
+          price: p.price,
+          image: p.image,
+        }));
+        setResults(list);
+      } catch {
+        setResults([]);
+      }
+    }, 250);
+
+    return () => clearTimeout(t);
   }, [query]);
 
   const handleClose = () => {
@@ -135,19 +116,19 @@ export default function SearchOverlay({ isOpen, onClose }) {
                     <h3 className="text-xs font-bold uppercase tracking-widest text-muted mb-6">Collections</h3>
                     <ul className="space-y-4">
                       <li>
-                        <Link to="/shop/ready-to-wear" onClick={handleClose} className="flex items-center justify-between group border-b border-border pb-2">
+                        <Link href="/shop/ready-to-wear" onClick={handleClose} className="flex items-center justify-between group border-b border-border pb-2">
                           <span className="font-serif text-xl group-hover:pl-4 transition-all duration-300">Ready to Wear</span>
                           <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
                       </li>
                       <li>
-                        <Link to="/shop/bubus" onClick={handleClose} className="flex items-center justify-between group border-b border-border pb-2">
+                        <Link href="/shop/bubus" onClick={handleClose} className="flex items-center justify-between group border-b border-border pb-2">
                           <span className="font-serif text-xl group-hover:pl-4 transition-all duration-300">Luxury Bùbús</span>
                           <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
                       </li>
                        <li>
-                        <Link to="/custom" onClick={handleClose} className="flex items-center justify-between group border-b border-border pb-2">
+                        <Link href="/custom" onClick={handleClose} className="flex items-center justify-between group border-b border-border pb-2">
                           <span className="font-serif text-xl group-hover:pl-4 transition-all duration-300">Custom Creations</span>
                           <ArrowRight size={16} className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
                         </Link>
@@ -169,7 +150,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
                       {results.map((product) => (
                         <Link 
                           key={product.id} 
-                          to={`/product/${product.id}`}
+                          href={`/product/${product.id}`}
                           onClick={handleClose}
                           className="group block"
                         >

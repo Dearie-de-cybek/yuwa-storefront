@@ -1,5 +1,5 @@
 import { Package, ChevronRight, ExternalLink } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 export default function OrdersTab({ orders }) {
   if (orders.length === 0) {
@@ -8,7 +8,7 @@ export default function OrdersTab({ orders }) {
         <Package size={48} className="mx-auto text-gray-300 mb-4" />
         <h3 className="font-serif text-xl text-gray-900">No orders yet</h3>
         <p className="text-gray-500 mb-6 text-sm">Once you place an order, it will appear here.</p>
-        <Link to="/shop/ready-to-wear" className="inline-block bg-black text-white px-8 py-3 text-xs uppercase tracking-widest rounded hover:bg-gray-800 transition-colors">
+        <Link href="/shop/ready-to-wear" className="inline-block bg-black text-white px-8 py-3 text-xs uppercase tracking-widest rounded hover:bg-gray-800 transition-colors">
           Start Shopping
         </Link>
       </div>
@@ -48,7 +48,7 @@ export default function OrdersTab({ orders }) {
                   {order.status}
                 </span>
                 
-                <Link to={`/account/orders/${order.id}`} className="p-2 text-gray-400 hover:text-black">
+                <Link href={`/account/orders/${order.id}`} className="p-2 text-gray-400 hover:text-black">
                   <ChevronRight size={18} />
                 </Link>
               </div>

@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext'; 
 import { toast } from 'sonner'; 
 import { ArrowRight, Loader2 } from 'lucide-react';
@@ -10,7 +13,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,9 +26,9 @@ export default function LoginPage() {
       
       // THE SMART REDIRECT LOGIC
       if (result.role === 'ADMIN') {
-        navigate('/admin/dashboard');
+        router.push('/admin/dashboard');
       } else {
-        navigate('/account');
+        router.push('/account');
       }
     } else {
       toast.error(result.error);
@@ -61,7 +64,7 @@ export default function LoginPage() {
           <div>
             <div className="flex justify-between items-center mb-2">
               <label className="block text-xs font-bold uppercase tracking-widest text-muted">Password</label>
-              <Link to="/forgot-password" className="text-xs text-gray-400...">Forgot Password?</Link>
+              <Link href="/forgot-password" className="text-xs text-gray-400...">Forgot Password?</Link>
             </div>
             <input 
               type="password" 
@@ -84,7 +87,7 @@ export default function LoginPage() {
 
         <div className="mt-8 text-center border-t border-border pt-6">
           <p className="text-sm text-muted mb-4">New to YUWA?</p>
-          <Link to="/register" className="inline-block border border-primary text-primary px-8 py-3 uppercase tracking-widest text-xs hover:bg-primary hover:text-white transition-colors">
+          <Link href="/register" className="inline-block border border-primary text-primary px-8 py-3 uppercase tracking-widest text-xs hover:bg-primary hover:text-white transition-colors">
             Create Account
           </Link>
         </div>

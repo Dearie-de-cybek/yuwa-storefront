@@ -1,9 +1,11 @@
+'use client';
+
 import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../../context/AuthContext';
 import { toast } from 'sonner';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 /**
  * Hook that owns all product editor state + API logic.

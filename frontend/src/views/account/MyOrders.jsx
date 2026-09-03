@@ -1,14 +1,17 @@
+'use client';
+
 // ============================================================
 // MY ORDERS — Customer order history
 // ============================================================
 
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { Package, ChevronRight, Loader2, ShoppingBag } from 'lucide-react';
+import Skeleton from '../../components/ui/Skeleton';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const STATUS_STYLES = {
   PENDING:    { bg: 'bg-yellow-50', text: 'text-yellow-700', dot: 'bg-yellow-500' },
@@ -49,8 +52,11 @@ export default function MyOrders() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <Loader2 size={24} className="animate-spin text-gray-400" />
+      <div className="max-w-3xl mx-auto px-6 pt-32 pb-20 space-y-4">
+        <Skeleton className="h-8 w-48 mb-8" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-28 w-full rounded-xl" />
+        ))}
       </div>
     );
   }
@@ -63,7 +69,7 @@ export default function MyOrders() {
           <ShoppingBag size={40} className="mx-auto text-gray-300 mb-4" />
           <p className="text-gray-500 mb-4">You haven't placed any orders yet.</p>
           <Link
-            to="/shop/ready-to-wear"
+            href="/shop/ready-to-wear"
             className="inline-block bg-black text-white px-8 py-3 uppercase tracking-widest text-xs hover:bg-gray-800 transition-colors"
           >
             Start Shopping
@@ -112,7 +118,7 @@ function OrderCard({ order }) {
 
   return (
     <Link
-      to={`/account/orders/${order.id}`}
+      href={`/account/orders/${order.id}`}
       className="block border border-gray-200 hover:border-gray-400 transition-colors p-5 group"
     >
       <div className="flex items-start justify-between mb-4">

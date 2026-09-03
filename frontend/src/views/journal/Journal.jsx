@@ -1,7 +1,9 @@
+'use client';
+
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 
 // --- LUXURY ANIMATION EASE ---
 const luxuryEase = [0.16, 1, 0.3, 1];
@@ -127,7 +129,7 @@ export default function Journal() {
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
           className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 mb-32 md:mb-48 items-center"
         >
-          <Link to={`/journal/${FEATURED_STORY.id}`} className="lg:col-span-7 group relative overflow-hidden h-[60vh] md:h-[80vh] bg-[#E0DCD3]">
+          <Link href={`/journal/${FEATURED_STORY.id}`} className="lg:col-span-7 group relative overflow-hidden h-[60vh] md:h-[80vh] bg-[#E0DCD3]">
             <img 
               src={FEATURED_STORY.image} 
               alt={FEATURED_STORY.title}
@@ -139,7 +141,7 @@ export default function Journal() {
             <span className="text-[10px] tracking-[0.3em] uppercase text-[#8C6D46] font-bold mb-6 block">
               {FEATURED_STORY.category}
             </span>
-            <Link to={`/journal/${FEATURED_STORY.id}`} className="group block">
+            <Link href={`/journal/${FEATURED_STORY.id}`} className="group block">
               <h2 className="font-serif text-4xl md:text-6xl leading-[1.1] text-[#1A1A1A] mb-8 group-hover:text-[#8C6D46] transition-colors duration-500">
                 {FEATURED_STORY.title}
               </h2>
@@ -147,7 +149,7 @@ export default function Journal() {
             <p className="text-[#555] text-lg font-light leading-relaxed mb-10">
               {FEATURED_STORY.abstract}
             </p>
-            <Link to={`/journal/${FEATURED_STORY.id}`} className="group inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-bold border-b border-[#1A1A1A] pb-1 w-max hover:text-[#8C6D46] hover:border-[#8C6D46] transition-all duration-500">
+            <Link href={`/journal/${FEATURED_STORY.id}`} className="group inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-bold border-b border-[#1A1A1A] pb-1 w-max hover:text-[#8C6D46] hover:border-[#8C6D46] transition-all duration-500">
               Read Story
               <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-500" />
             </Link>
@@ -164,13 +166,13 @@ export default function Journal() {
             initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
             className="md:col-span-6 flex flex-col"
           >
-            <Link to={`/journal/${EDITORIAL_STORIES[0].id}`} className="group block mb-8 overflow-hidden bg-[#E0DCD3] aspect-[3/4]">
+            <Link href={`/journal/${EDITORIAL_STORIES[0].id}`} className="group block mb-8 overflow-hidden bg-[#E0DCD3] aspect-[3/4]">
               <img src={EDITORIAL_STORIES[0].image} alt={EDITORIAL_STORIES[0].title} className="w-full h-full object-cover transition-transform duration-[2.5s] ease-out group-hover:scale-105" />
             </Link>
             <span className="text-[10px] tracking-[0.3em] uppercase text-[#8C6D46] font-bold mb-4 block">
               {EDITORIAL_STORIES[0].category}
             </span>
-            <Link to={`/journal/${EDITORIAL_STORIES[0].id}`} className="group block mb-4">
+            <Link href={`/journal/${EDITORIAL_STORIES[0].id}`} className="group block mb-4">
               <h3 className="font-serif text-3xl md:text-5xl leading-tight group-hover:text-[#8C6D46] transition-colors duration-500">{EDITORIAL_STORIES[0].title}</h3>
             </Link>
             <p className="text-[#555] font-light leading-relaxed">{EDITORIAL_STORIES[0].abstract}</p>
@@ -181,26 +183,26 @@ export default function Journal() {
             
             {/* Stacked Top */}
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}>
-              <Link to={`/journal/${EDITORIAL_STORIES[1].id}`} className="group block mb-6 overflow-hidden bg-[#E0DCD3] aspect-square">
+              <Link href={`/journal/${EDITORIAL_STORIES[1].id}`} className="group block mb-6 overflow-hidden bg-[#E0DCD3] aspect-square">
                 <img src={EDITORIAL_STORIES[1].image} alt={EDITORIAL_STORIES[1].title} className="w-full h-full object-cover transition-transform duration-[2.5s] ease-out group-hover:scale-105" />
               </Link>
               <span className="text-[10px] tracking-[0.3em] uppercase text-[#8C6D46] font-bold mb-3 block">
                 {EDITORIAL_STORIES[1].category}
               </span>
-              <Link to={`/journal/${EDITORIAL_STORIES[1].id}`} className="group block mb-3">
+              <Link href={`/journal/${EDITORIAL_STORIES[1].id}`} className="group block mb-3">
                 <h3 className="font-serif text-2xl md:text-3xl leading-snug group-hover:text-[#8C6D46] transition-colors duration-500">{EDITORIAL_STORIES[1].title}</h3>
               </Link>
             </motion.div>
 
             {/* Stacked Bottom */}
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}>
-              <Link to={`/journal/${EDITORIAL_STORIES[2].id}`} className="group block mb-6 overflow-hidden bg-[#E0DCD3] aspect-[4/3]">
+              <Link href={`/journal/${EDITORIAL_STORIES[2].id}`} className="group block mb-6 overflow-hidden bg-[#E0DCD3] aspect-[4/3]">
                 <img src={EDITORIAL_STORIES[2].image} alt={EDITORIAL_STORIES[2].title} className="w-full h-full object-cover transition-transform duration-[2.5s] ease-out group-hover:scale-105" />
               </Link>
               <span className="text-[10px] tracking-[0.3em] uppercase text-[#8C6D46] font-bold mb-3 block">
                 {EDITORIAL_STORIES[2].category}
               </span>
-              <Link to={`/journal/${EDITORIAL_STORIES[2].id}`} className="group block mb-3">
+              <Link href={`/journal/${EDITORIAL_STORIES[2].id}`} className="group block mb-3">
                 <h3 className="font-serif text-2xl md:text-3xl leading-snug group-hover:text-[#8C6D46] transition-colors duration-500">{EDITORIAL_STORIES[2].title}</h3>
               </Link>
             </motion.div>
@@ -216,17 +218,17 @@ export default function Journal() {
               <span className="text-[10px] tracking-[0.3em] uppercase text-[#8C6D46] font-bold mb-6 block">
                 {EDITORIAL_STORIES[3].category}
               </span>
-              <Link to={`/journal/${EDITORIAL_STORIES[3].id}`} className="group block mb-6">
+              <Link href={`/journal/${EDITORIAL_STORIES[3].id}`} className="group block mb-6">
                 <h3 className="font-serif text-4xl md:text-5xl leading-tight group-hover:text-[#8C6D46] transition-colors duration-500">{EDITORIAL_STORIES[3].title}</h3>
               </Link>
               <p className="text-[#555] font-light text-lg leading-relaxed mb-8 max-w-lg">
                 {EDITORIAL_STORIES[3].abstract}
               </p>
-              <Link to={`/journal/${EDITORIAL_STORIES[3].id}`} className="group inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-bold border-b border-[#1A1A1A] pb-1 hover:text-[#8C6D46] hover:border-[#8C6D46] transition-all duration-500">
+              <Link href={`/journal/${EDITORIAL_STORIES[3].id}`} className="group inline-flex items-center gap-4 text-[10px] uppercase tracking-[0.2em] font-bold border-b border-[#1A1A1A] pb-1 hover:text-[#8C6D46] hover:border-[#8C6D46] transition-all duration-500">
                 Read Story <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-500" />
               </Link>
             </div>
-            <Link to={`/journal/${EDITORIAL_STORIES[3].id}`} className="order-1 lg:order-2 group block overflow-hidden bg-[#E0DCD3] h-[40vh] md:h-[60vh]">
+            <Link href={`/journal/${EDITORIAL_STORIES[3].id}`} className="order-1 lg:order-2 group block overflow-hidden bg-[#E0DCD3] h-[40vh] md:h-[60vh]">
               <img src={EDITORIAL_STORIES[3].image} alt={EDITORIAL_STORIES[3].title} className="w-full h-full object-cover transition-transform duration-[2.5s] ease-out group-hover:scale-105" />
             </Link>
           </motion.div>

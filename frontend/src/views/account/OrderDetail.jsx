@@ -1,14 +1,17 @@
+'use client';
+
 // ============================================================
 // ORDER DETAIL — Single order view for customer
 // ============================================================
 
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, Package, Truck, CheckCircle, Clock, XCircle, Loader2, MapPin, Mail } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const STATUS_STEPS = ['PENDING', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
 
@@ -59,7 +62,7 @@ export default function OrderDetail() {
     return (
       <div className="max-w-3xl mx-auto px-6 py-16 text-center">
         <p className="text-gray-500 mb-4">{error || 'Order not found'}</p>
-        <Link to="/account/orders" className="text-sm text-black underline">Back to orders</Link>
+        <Link href="/account/orders" className="text-sm text-black underline">Back to orders</Link>
       </div>
     );
   }
@@ -70,7 +73,7 @@ export default function OrderDetail() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-16">
       {/* Back link */}
-      <Link to="/account/orders" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-black mb-8">
+      <Link href="/account/orders" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-black mb-8">
         <ArrowLeft size={16} /> All Orders
       </Link>
 

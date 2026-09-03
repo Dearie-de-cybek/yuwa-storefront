@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
-import axios from 'axios';
+'use client';
+
+import { useState, useMemo } from 'react';
 import ProductCard from '../../components/product/ProductCard';
-import { Filter, ChevronDown, LayoutGrid, Grid2x2, X, Check, Loader2 } from 'lucide-react';
+import { Filter, ChevronDown, LayoutGrid, Grid2x2, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- FILTER CONFIGURATION ---
@@ -30,16 +31,7 @@ const AVAILABLE_FILTERS = {
   ]
 };
 
-// Helper to get hex code for swatches
-const getColorHex = (colorName) => {
-  const found = AVAILABLE_FILTERS.colors.find(c => c.name.toLowerCase() === colorName?.toLowerCase());
-  return found ? found.value : '#cccccc';
-};
-
-export default function Shop() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-
+export default function Shop({ products = [] }) {
   const [gridCols, setGridCols] = useState(4);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortOption, setSortOption] = useState('newest');
@@ -53,61 +45,7 @@ export default function Shop() {
     priceRange: null
   });
 
-  // --- 1. FETCH PRODUCTS FROM BACKEND ---
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        // Fetch only ACTIVE products
-        const res = await axios.get('http://localhost:5001/api/products?status=ACTIVE&limit=100');
-        
-        // Transform backend data to match what the frontend UI expects
-        const formattedProducts = res.data.products.map(p => {
-          const rawVariants = p.variants || [];
-          
-          // Extract unique sizes and colors from variants
-          const sizes = [...new Set(rawVariants.map(v => v.size).filter(Boolean))];
-          const colors = [...new Set(rawVariants.map(v => v.color).filter(Boolean))];
-
-          // Format variants for the color swatches on the ProductCard
-          const formattedVariants = colors.map(color => {
-            const v = rawVariants.find(variant => variant.color === color);
-            return {
-              id: v?.id || color,
-              colorName: color,
-              type: 'color',
-              value: getColorHex(color),
-              image: p.image // Fallback to main product image for the swatch hover
-            };
-          });
-
-          return {
-            id: p.id,
-            name: p.name,
-            slug: p.slug,
-            category: p.category?.name || 'Uncategorized',
-            fabric: p.material || 'Mixed', 
-            price: p.price,
-            compareAt: p.compareAt,
-            sizes: sizes,
-            colors: colors,
-            tag: p.featured ? 'Featured' : (p.compareAt ? 'Sale' : null),
-            variants: formattedVariants,
-            image: p.image || 'https://via.placeholder.com/600x800?text=No+Image'
-          };
-        });
-
-        setProducts(formattedProducts);
-      } catch (error) {
-        console.error("Failed to fetch products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  // --- 2. LOGIC: Filter & Sort ---
+  // --- LOGIC: Filter & Sort (products arrive pre-mapped from the server) ---
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
@@ -164,16 +102,6 @@ export default function Shop() {
   };
 
   const activeCount = Object.values(filters).flat().length + (filters.priceRange ? 1 : 0);
-
-  // --- RENDER LOADING STATE ---
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-32 flex flex-col items-center justify-center bg-white">
-        <Loader2 className="animate-spin text-gray-300 mb-4" size={32} />
-        <p className="font-serif text-sm tracking-[0.2em] uppercase text-gray-400">Curating Collection</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 bg-white selection:bg-black selection:text-white">
