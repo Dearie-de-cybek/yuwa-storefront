@@ -19,12 +19,16 @@ const _formatProduct = (p) => ({
 /**
  * Score-and-rank recommendation engine — no AI, just weighted filters.
  * Occasion carries the most weight (it's the hard "what am I dressing
- * for" signal), mood next, silhouette last. Products that don't match
- * the chosen occasion at all still rank below any that do, so a sparse
- * occasion (few products) gracefully backfills with the next-best matches
- * instead of returning a near-empty result.
+ * for" signal), mood next, silhouette after, an optional fabric/texture
+ * keyword last. Products that don't match the chosen occasion at all
+ * still rank below any that do, so a sparse occasion (few products)
+ * gracefully backfills with the next-best matches instead of returning
+ * a near-empty result. Reused by both the occasion/mood/silhouette Style
+ * Quiz and the persona-driven Find Your Signature quiz — each maps its
+ * own questions onto this same {occasion, mood, silhouette, material}
+ * shape before calling in.
  */
-const recommend = async ({ occasion, mood, silhouette, limit = 6 }) => {
+const recommend = async ({ occasion, mood, silhouette, material, limit = 6 }) => {
   if (!VALID_OCCASION.includes(occasion)) return { error: 'invalid_occasion' };
   if (mood && !VALID_MOOD.includes(mood)) return { error: 'invalid_mood' };
   if (silhouette && !VALID_SILHOUETTE.includes(silhouette)) return { error: 'invalid_silhouette' };
@@ -36,11 +40,14 @@ const recommend = async ({ occasion, mood, silhouette, limit = 6 }) => {
     include: { media: { where: { position: 0 }, take: 1 } },
   });
 
+  const materialKeyword = material ? material.toLowerCase() : null;
+
   const scored = candidates.map((p) => {
     let score = 0;
     if (p.occasion === occasion) score += 3;
     if (mood && p.mood === mood) score += 2;
     if (silhouette && p.silhouette === silhouette) score += 1;
+    if (materialKeyword && p.material?.toLowerCase().includes(materialKeyword)) score += 1;
     return { product: p, score };
   });
 

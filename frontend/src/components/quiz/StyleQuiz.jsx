@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import ProductCard from '@/components/product/ProductCard';
 import { OCCASIONS } from '@/lib/occasions';
+import { mapQuizProduct } from '@/lib/product';
 
 const luxuryEase = [0.16, 1, 0.3, 1];
 const stepVariants = {
@@ -29,18 +30,6 @@ const SILHOUETTES = [
 ];
 
 const QUESTIONS = ["What's the occasion?", "What's your mood?", "What's your preferred silhouette?"];
-
-// mapProduct: styleQuizService already returns a flat shape; ProductCard
-// needs { id, name, category, price, tag, variants: [{id,type,value,image}] }
-const toCardProduct = (p) => ({
-  id: p.id,
-  name: p.name,
-  category: '',
-  price: p.price,
-  compareAt: p.compareAt,
-  tag: p.compareAt ? 'Sale' : null,
-  variants: [{ id: p.id, colorName: 'Default', type: 'color', value: '#E5E5E5', image: p.image }],
-});
 
 export default function StyleQuiz({ initialOccasion = null }) {
   const [step, setStep] = useState(initialOccasion ? 1 : 0);
@@ -92,10 +81,14 @@ export default function StyleQuiz({ initialOccasion = null }) {
           </div>
         )}
 
-        <AnimatePresence mode="wait">
+        {/* Each step conditionally mounts its own motion.div — a plain React
+            unmount is instant and reliable (no AnimatePresence exit-tracking
+            to depend on), while `initial`/`animate` still gives every
+            question a clean entrance. */}
+        <>
           {/* STEP 0 — Occasion */}
           {step === 0 && (
-            <motion.div key="step-0" variants={stepVariants} initial="enter" animate="center" exit="exit">
+            <motion.div variants={stepVariants} initial="enter" animate="center">
               <h1 className="font-serif text-4xl md:text-5xl text-center mb-14">{QUESTIONS[0]}</h1>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {OCCASIONS.map((o) => (
@@ -121,7 +114,7 @@ export default function StyleQuiz({ initialOccasion = null }) {
 
           {/* STEP 1 — Mood */}
           {step === 1 && (
-            <motion.div key="step-1" variants={stepVariants} initial="enter" animate="center" exit="exit">
+            <motion.div variants={stepVariants} initial="enter" animate="center">
               <h1 className="font-serif text-4xl md:text-5xl text-center mb-14">{QUESTIONS[1]}</h1>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
                 {MOODS.map((m) => (
@@ -142,7 +135,7 @@ export default function StyleQuiz({ initialOccasion = null }) {
 
           {/* STEP 2 — Silhouette */}
           {step === 2 && (
-            <motion.div key="step-2" variants={stepVariants} initial="enter" animate="center" exit="exit">
+            <motion.div variants={stepVariants} initial="enter" animate="center">
               <h1 className="font-serif text-4xl md:text-5xl text-center mb-14">{QUESTIONS[2]}</h1>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto">
                 {SILHOUETTES.map((s) => (
@@ -163,7 +156,7 @@ export default function StyleQuiz({ initialOccasion = null }) {
 
           {/* STEP 3 — Results */}
           {step === 3 && (
-            <motion.div key="step-3" variants={stepVariants} initial="enter" animate="center">
+            <motion.div variants={stepVariants} initial="enter" animate="center">
               {loading ? (
                 <div className="flex flex-col items-center py-32 text-muted">
                   <Loader2 className="animate-spin mb-4" size={28} />
@@ -187,7 +180,7 @@ export default function StyleQuiz({ initialOccasion = null }) {
                   {results && results.length > 0 ? (
                     <div className="grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-6">
                       {results.map((p) => (
-                        <ProductCard key={p.id} product={toCardProduct(p)} />
+                        <ProductCard key={p.id} product={mapQuizProduct(p)} />
                       ))}
                     </div>
                   ) : (
@@ -202,7 +195,7 @@ export default function StyleQuiz({ initialOccasion = null }) {
               )}
             </motion.div>
           )}
-        </AnimatePresence>
+        </>
 
         {step > 0 && step < 3 && (
           <button

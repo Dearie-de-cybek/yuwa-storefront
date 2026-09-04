@@ -53,3 +53,18 @@ export function mapProductList(p) {
     image: p.image || PLACEHOLDER,
   };
 }
+
+// Map a styleQuizService recommendation (flat: id/name/price/image, no
+// variants) into the shape ProductCard expects. Shared by the Style Quiz
+// and the Find Your Signature quiz — both hit the same /api/style-quiz.
+export function mapQuizProduct(p) {
+  return {
+    id: p.id,
+    name: p.name,
+    category: '',
+    price: p.price,
+    compareAt: p.compareAt,
+    tag: p.compareAt ? 'Sale' : null,
+    variants: [{ id: p.id, colorName: 'Default', type: 'color', value: '#E5E5E5', image: p.image || PLACEHOLDER }],
+  };
+}

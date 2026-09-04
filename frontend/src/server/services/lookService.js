@@ -51,13 +51,18 @@ const _formatLook = (look) => {
 };
 
 /**
- * Find the active Look(s) a given product belongs to (as any slot, not
- * just DRESS), with sibling items populated. Returns [] if the product
- * isn't styled into any Look yet.
+ * Find the active Look(s) where this product is the DRESS anchor, with
+ * sibling accessory items populated. "Complete The Look" only belongs on
+ * the anchor piece's own page — viewing an accessory's page (e.g. the
+ * clutch) must NOT surface the same look, or "shop the look" would be
+ * offering to sell you the very item you're already looking at alongside
+ * a dress you weren't browsing. Returns [] if this product isn't a DRESS
+ * anchor in any Look (including when it's merely an accessory *within*
+ * one).
  */
 const findByProduct = async (productId) => {
   const looks = await prisma.look.findMany({
-    where: { isActive: true, items: { some: { productId } } },
+    where: { isActive: true, items: { some: { productId, slot: 'DRESS' } } },
     include: { items: ITEMS_INCLUDE },
   });
 

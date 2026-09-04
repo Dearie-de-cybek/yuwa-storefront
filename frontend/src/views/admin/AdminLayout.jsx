@@ -4,10 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
-import { 
-  LayoutDashboard, ShoppingBag, Users, Tag, 
-  Settings, LogOut, Package, Menu, X, 
-  Bell, User, ChevronDown, Search  
+import {
+  LayoutDashboard, ShoppingBag, Users, Tag,
+  Settings, LogOut, Package, Menu, X,
+  Bell, User, ChevronDown, Search, BookOpen
 } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
@@ -27,6 +27,7 @@ export default function AdminLayout({ children }) {
     { name: 'Orders', href: '/admin/orders', icon: Package },
     { name: 'Customers', href: '/admin/customers', icon: Users },
     { name: 'Promotions', href: '/admin/promotions', icon: Tag },
+    { name: 'Our Story', href: '/admin/our-story', icon: BookOpen },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

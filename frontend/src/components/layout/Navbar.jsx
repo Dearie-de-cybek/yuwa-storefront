@@ -55,6 +55,7 @@ const CUSTOM_MEGA = {
 const navStructure = [
   { title: 'Shop', mega: SHOP_MEGA },
   { title: 'Custom Creations', path: '/custom', isSpecial: true, mega: CUSTOM_MEGA },
+  { title: 'Our Story', path: '/our-story' },
   { title: 'Journal', path: '/journal' },
 ];
 

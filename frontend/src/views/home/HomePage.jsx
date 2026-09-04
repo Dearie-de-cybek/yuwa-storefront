@@ -46,7 +46,7 @@ const sliderVariants = {
   }
 };
 
-export default function HomePage({ featured = [], occasionSummary = {} }) {
+export default function HomePage({ featured = [], occasionSummary = {}, story }) {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
   
@@ -257,22 +257,65 @@ export default function HomePage({ featured = [], occasionSummary = {} }) {
       <OccasionEdit summary={occasionSummary} />
 
       {/* =========================================
+          5c. FIND YOUR SIGNATURE — quiz entry point
+      ========================================= */}
+      <motion.section
+        initial="hidden" whileInView="visible" viewport={{ once: true, margin: '-100px' }} variants={fadeUp}
+        className="py-24 md:py-28 px-6 bg-[#EFECE6] text-center"
+      >
+        <span className="block text-[10px] tracking-[0.3em] uppercase mb-5 text-[#8B5E34]">Not Sure Where To Start?</span>
+        <h2 className="font-serif text-3xl md:text-5xl mb-6">Find Your Signature.</h2>
+        <p className="font-serif italic text-base md:text-lg text-[#555] max-w-md mx-auto mb-10">
+          Your style says more than your outfit. Three questions to find the piece that speaks for you.
+        </p>
+        <Link
+          href="/find-your-bubu"
+          className="group inline-flex items-center gap-3 bg-[#1A1918] text-white px-8 py-4 text-[11px] font-bold uppercase tracking-[0.25em] hover:bg-[#8B5E34] transition-colors"
+        >
+          Take The Quiz
+          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+        </Link>
+      </motion.section>
+
+      {/* =========================================
           6. CULTURAL ANCHOR
       ========================================= */}
       <section className="bg-[#1A1918] text-[#FBF9F5] py-32 md:py-48 px-6 md:px-12 text-center relative overflow-hidden">
         <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'url("https://www.transparenttextures.com/patterns/stardust.png")' }} />
-        
-        <motion.div 
+
+        <motion.div
           initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={fadeUp}
           className="max-w-3xl mx-auto relative z-10"
         >
           <div className="w-[1px] h-16 bg-[#8B5E34] mx-auto mb-12" />
-          <h2 className="font-serif text-3xl md:text-5xl leading-relaxed mb-12">
-            "To wear YUWA is to carry your history with you, unapologetically, into the rooms where the future is made."
-          </h2>
-          <span className="text-[10px] uppercase tracking-[0.4em] font-bold text-[#8B5E34]">
+
+          {story && (
+            <>
+              <span className="block text-[10px] tracking-[0.3em] uppercase mb-6 text-[#8B5E34]">
+                {story.heroEyebrow}
+              </span>
+              <h2 className="font-serif text-4xl md:text-6xl leading-[1.05] mb-2">{story.heroTitle}</h2>
+              <h2 className="font-serif italic font-light text-3xl md:text-5xl leading-[1.05] mb-12 text-[#FBF9F5]/85">
+                {story.heroAccent}
+              </h2>
+            </>
+          )}
+
+          <h3 className="font-serif italic text-xl md:text-2xl leading-relaxed mb-10 text-[#FBF9F5]/80 max-w-xl mx-auto">
+            &ldquo;{story?.quote || 'To wear YUWA is to carry your history with you, unapologetically, into the rooms where the future is made.'}&rdquo;
+          </h3>
+
+          <span className="block text-[10px] uppercase tracking-[0.4em] font-bold text-[#8B5E34] mb-10">
             Made in Nigeria. Worn Globally.
           </span>
+
+          <Link
+            href="/our-story"
+            className="group inline-flex items-center gap-4 text-[11px] font-bold uppercase tracking-[0.2em] border-b border-[#FAF9F6] pb-1 hover:text-[#B8860B] hover:border-[#B8860B] transition-colors duration-500"
+          >
+            Read Our Story
+            <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform duration-500 ease-out" />
+          </Link>
         </motion.div>
       </section>
 

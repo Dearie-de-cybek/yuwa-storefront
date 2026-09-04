@@ -777,6 +777,46 @@ model StoreSetting {
 }
 
 // ============================================================
+// 24. BRAND STORY — Singleton, admin-editable "Our Story" content
+// ============================================================
+// Not a blog/CMS with many posts — one editable narrative (hero,
+// Nigeria→Australia journey split, designer bio, sourcing story, closing
+// quote) that renders on /our-story and teases on the homepage. Admin
+// edits it the same way they edit StoreSetting.
+// ============================================================
+
+model BrandStory {
+  id String @id @default("singleton")
+
+  heroEyebrow String @default("Our Story")
+  heroTitle   String @default("Rooted in Africa.")
+  heroAccent  String @default("Designed for everywhere.")
+  heroBody    String @db.Text @default("Every YUWA piece begins in Lagos and finds its way into wardrobes across the world.")
+  heroImage   String @default("/images/about.jpg")
+
+  journeyTitle      String @default("From Nigeria to Australia")
+  journeyBody       String @db.Text @default("Born from African creativity. Made for women across the world.")
+  journeyFromLabel  String @default("Lagos, Nigeria")
+  journeyFromImage  String @default("/images/atelier-fabric.jpg")
+  journeyToLabel    String @default("Sydney, Australia")
+  journeyToImage    String @default("/images/tailor.jpg")
+
+  designerName  String @default("The Designer")
+  designerTitle String @default("Founder & Creative Director")
+  designerBio   String @db.Text @default("Raised in Lagos and now based in Australia, our founder carries two homes into every collection — the color and craft of West Africa, cut for the way women actually move through their lives today.")
+  designerImage String @default("/images/tailor1.jpg")
+
+  sourcingTitle String @default("Fabric, Sourced with Intention")
+  sourcingBody  String @db.Text @default("Every bolt of Adire and Aso-Oke is sourced directly from artisans and fabric houses in Nigeria, then hand-finished with a small team of Lagos tailors we've worked with for years. Nothing is mass-produced. Nothing is generic.")
+  sourcingImage String @default("/images/tailor3.jpg")
+
+  quote       String @db.Text @default("To wear YUWA is to carry your history with you, unapologetically, into the rooms where the future is made.")
+  quoteAuthor String @default("YUWA")
+
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================
 // 22. WAITLIST — Email capture for not-yet-launched occasions
 // ============================================================
 
