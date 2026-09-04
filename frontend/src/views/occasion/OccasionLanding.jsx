@@ -19,9 +19,16 @@ export default function OccasionLanding() {
         <motion.div initial="hidden" animate="visible" variants={fadeUp}>
           <span className="block text-[10px] tracking-[0.3em] uppercase mb-6 text-[#8C6D46]">The Edit</span>
           <h1 className="font-serif text-5xl md:text-7xl lg:text-8xl leading-[0.9] tracking-tight mb-8">Shop by Occasion</h1>
-          <p className="font-serif italic text-lg md:text-2xl text-[#555] max-w-xl mx-auto">
+          <p className="font-serif italic text-lg md:text-2xl text-[#555] max-w-xl mx-auto mb-10">
             Not “which dress do I like?” — but “what am I dressing for?”
           </p>
+          <Link
+            href="/style-quiz"
+            className="group inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-[0.25em] text-[#1A1A1A] border-b border-[#1A1A1A] pb-1 hover:text-[#8C6D46] hover:border-[#8C6D46] transition-colors"
+          >
+            Not sure where to start? Take the Style Quiz
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
         </motion.div>
       </section>
 

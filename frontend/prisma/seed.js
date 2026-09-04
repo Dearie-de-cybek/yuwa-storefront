@@ -4,19 +4,20 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 // 12 products mapped to /public/models/1.jpg .. 12.jpg
+// mood/silhouette power the Style Quiz recommendation scoring.
 const PRODUCTS = [
-  { n: 1,  name: 'The Zaria Silk Bubu',     cat: 'luxury', price: 180000, compareAt: null,   material: '100% Adire Silk',   featured: true,  occ: 'EVERYDAY', colors: ['Emerald', 'Clay'] },
-  { n: 2,  name: 'Lagos City Midi',         cat: 'rtw',    price: 120000, compareAt: 150000, material: 'Ankara Cotton',     featured: false, occ: 'EVERYDAY', colors: ['Indigo', 'Coral'] },
-  { n: 3,  name: 'Aso-Oke Empire Gown',     cat: 'luxury', price: 320000, compareAt: null,   material: 'Woven Aso-Oke',     featured: true,  occ: 'WEDDING',  colors: ['Gold', 'Burgundy'] },
-  { n: 4,  name: 'Adire Wrap Dress',        cat: 'rtw',    price: 95000,  compareAt: null,   material: 'Hand-Dyed Adire',   featured: true,  occ: 'EVERYDAY', colors: ['Indigo', 'Ivory'] },
-  { n: 5,  name: 'Ankara Power Suit',       cat: 'rtw',    price: 145000, compareAt: null,   material: 'Wax Print Cotton',  featured: false, occ: 'PROM',     colors: ['Royal Blue', 'Black'] },
-  { n: 6,  name: 'Ijele Ceremonial Bubu',   cat: 'luxury', price: 275000, compareAt: 300000, material: 'Silk Chiffon',      featured: true,  occ: 'WEDDING',  colors: ['Plum', 'Champagne'] },
-  { n: 7,  name: 'Sahara Linen Co-ord',     cat: 'rtw',    price: 110000, compareAt: null,   material: 'Pure Linen',        featured: false, occ: 'EVERYDAY', colors: ['Champagne', 'Teal'] },
-  { n: 8,  name: 'Benin Bronze Kaftan',     cat: 'luxury', price: 210000, compareAt: null,   material: 'Brocade Silk',      featured: false, occ: 'DINNER',   colors: ['Gold', 'Black'] },
-  { n: 9,  name: 'Nok Terracotta Maxi',     cat: 'rtw',    price: 130000, compareAt: null,   material: 'Crepe',             featured: true,  occ: 'DINNER',   colors: ['Coral', 'Clay'] },
-  { n: 10, name: 'Kano Indigo Boubou',      cat: 'luxury', price: 240000, compareAt: null,   material: 'Adire Silk',        featured: false, occ: 'EVERYDAY', colors: ['Indigo', 'White'] },
-  { n: 11, name: 'Yoruba Gele Set',         cat: 'rtw',    price: 105000, compareAt: 135000, material: 'Aso-Oke Blend',     featured: false, occ: 'WEDDING',  colors: ['Burgundy', 'Gold'] },
-  { n: 12, name: 'Eko Sunset Gown',         cat: 'luxury', price: 298000, compareAt: null,   material: 'Silk Satin',        featured: true,  occ: 'PROM',     colors: ['Coral', 'Plum'] },
+  { n: 1,  name: 'The Zaria Silk Bubu',     cat: 'luxury', price: 180000, compareAt: null,   material: '100% Adire Silk',   featured: true,  occ: 'EVERYDAY', mood: 'ELEGANT',  sil: 'FLOWING',   colors: ['Emerald', 'Clay'] },
+  { n: 2,  name: 'Lagos City Midi',         cat: 'rtw',    price: 120000, compareAt: 150000, material: 'Ankara Cotton',     featured: false, occ: 'EVERYDAY', mood: 'BOLD',     sil: 'FITTED',    colors: ['Indigo', 'Coral'] },
+  { n: 3,  name: 'Aso-Oke Empire Gown',     cat: 'luxury', price: 320000, compareAt: null,   material: 'Woven Aso-Oke',     featured: true,  occ: 'WEDDING',  mood: 'DRAMATIC', sil: 'STATEMENT', colors: ['Gold', 'Burgundy'] },
+  { n: 4,  name: 'Adire Wrap Dress',        cat: 'rtw',    price: 95000,  compareAt: null,   material: 'Hand-Dyed Adire',   featured: true,  occ: 'EVERYDAY', mood: 'MINIMAL',  sil: 'FITTED',    colors: ['Indigo', 'Ivory'] },
+  { n: 5,  name: 'Ankara Power Suit',       cat: 'rtw',    price: 145000, compareAt: null,   material: 'Wax Print Cotton',  featured: false, occ: 'PROM',     mood: 'BOLD',     sil: 'FITTED',    colors: ['Royal Blue', 'Black'] },
+  { n: 6,  name: 'Ijele Ceremonial Bubu',   cat: 'luxury', price: 275000, compareAt: 300000, material: 'Silk Chiffon',      featured: true,  occ: 'WEDDING',  mood: 'ELEGANT',  sil: 'FLOWING',   colors: ['Plum', 'Champagne'] },
+  { n: 7,  name: 'Sahara Linen Co-ord',     cat: 'rtw',    price: 110000, compareAt: null,   material: 'Pure Linen',        featured: false, occ: 'EVERYDAY', mood: 'MINIMAL',  sil: 'FLOWING',   colors: ['Champagne', 'Teal'] },
+  { n: 8,  name: 'Benin Bronze Kaftan',     cat: 'luxury', price: 210000, compareAt: null,   material: 'Brocade Silk',      featured: false, occ: 'DINNER',   mood: 'DRAMATIC', sil: 'FLOWING',   colors: ['Gold', 'Black'] },
+  { n: 9,  name: 'Nok Terracotta Maxi',     cat: 'rtw',    price: 130000, compareAt: null,   material: 'Crepe',             featured: true,  occ: 'DINNER',   mood: 'ELEGANT',  sil: 'FITTED',    colors: ['Coral', 'Clay'] },
+  { n: 10, name: 'Kano Indigo Boubou',      cat: 'luxury', price: 240000, compareAt: null,   material: 'Adire Silk',        featured: false, occ: 'EVERYDAY', mood: 'ELEGANT',  sil: 'STATEMENT', colors: ['Indigo', 'White'] },
+  { n: 11, name: 'Yoruba Gele Set',         cat: 'rtw',    price: 105000, compareAt: 135000, material: 'Aso-Oke Blend',     featured: false, occ: 'WEDDING',  mood: 'BOLD',     sil: 'STATEMENT', colors: ['Burgundy', 'Gold'] },
+  { n: 12, name: 'Eko Sunset Gown',         cat: 'luxury', price: 298000, compareAt: null,   material: 'Silk Satin',        featured: true,  occ: 'PROM',     mood: 'DRAMATIC', sil: 'STATEMENT', colors: ['Coral', 'Plum'] },
 ];
 
 const SIZES = ['S', 'M', 'L'];
@@ -150,6 +151,8 @@ async function main() {
         status: 'ACTIVE',
         featured: p.featured,
         occasion: p.occ,
+        mood: p.mood,
+        silhouette: p.sil,
         material: p.material,
         categoryId,
         createdById: admin.id,

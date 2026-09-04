@@ -64,6 +64,11 @@ model Product {
   // Shop-by-occasion grouping
   occasion Occasion?
 
+  // Style Quiz — soft-scored recommendation signals (dress-type products
+  // only; accessories leave these null, same as occasion)
+  mood       Mood?
+  silhouette Silhouette?
+
   // Soft delete
   isDeleted Boolean  @default(false)
   deletedAt DateTime?
@@ -120,6 +125,19 @@ enum Occasion {
   PROM
   DINNER
   EVERYDAY
+}
+
+enum Mood {
+  ELEGANT
+  BOLD
+  MINIMAL
+  DRAMATIC
+}
+
+enum Silhouette {
+  FLOWING
+  FITTED
+  STATEMENT
 }
 
 // ============================================================
