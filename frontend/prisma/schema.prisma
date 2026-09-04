@@ -96,6 +96,7 @@ model Product {
   wishlistItems     WishlistItem[]
   regionalPrices    RegionalPrice[]
   promotionProducts PromotionProduct[]
+  lookItems         LookItem[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -769,4 +770,51 @@ model WaitlistEntry {
 
   @@unique([email, occasion])
   @@index([occasion])
+}
+
+// ============================================================
+// 23. LOOKS — "Complete The Look" styling sets
+// ============================================================
+// A Look is a named, priced outfit built from existing catalog products
+// (a dress plus accessories). The catalog doesn't need to carry
+// accessories yet for this to work — a Look with only a DRESS item is
+// valid and simply renders nothing extra on the PDP.
+// ============================================================
+
+model Look {
+  id       String  @id @default(uuid())
+  name     String // "The Amara Bubu Look"
+  slug     String  @unique
+  isActive Boolean @default(true)
+
+  items LookItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model LookItem {
+  look   Look   @relation(fields: [lookId], references: [id], onDelete: Cascade)
+  lookId String
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+
+  slot     LookSlot
+  position Int      @default(0)
+
+  @@id([lookId, productId])
+  @@index([lookId])
+  @@index([productId])
+}
+
+enum LookSlot {
+  DRESS
+  HEADWRAP
+  BAG
+  JEWELLERY
+  SHOES
+  OTHER
 }

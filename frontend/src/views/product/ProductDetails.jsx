@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 
 // Components
 import SizeGuideModal from '../../components/product/SizeGuideModal';
+import CompleteTheLook from '../../components/product/CompleteTheLook';
 import ReviewsSection from '../../components/product/ReviewsSection';
 import RelatedProducts from '../../components/product/RelatedProducts';
 
@@ -292,6 +293,8 @@ export default function ProductDetails({ detail }) {
           </div>
         </div>
       </div>
+
+      <CompleteTheLook productId={id} />
 
       <div ref={reviewsRef}>
         <ReviewsSection productId={id} />
