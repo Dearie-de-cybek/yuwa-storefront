@@ -7,7 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, ShoppingBag, Users, Tag,
   Settings, LogOut, Package, Menu, X,
-  Bell, User, ChevronDown, Search, BookOpen
+  Bell, User, ChevronDown, Search, BookOpen, Camera
 } from 'lucide-react';
 
 export default function AdminLayout({ children }) {
@@ -28,6 +28,7 @@ export default function AdminLayout({ children }) {
     { name: 'Customers', href: '/admin/customers', icon: Users },
     { name: 'Promotions', href: '/admin/promotions', icon: Tag },
     { name: 'Our Story', href: '/admin/our-story', icon: BookOpen },
+    { name: 'Community', href: '/admin/community', icon: Camera },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 

@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 // Components
 import SizeGuideModal from '../../components/product/SizeGuideModal';
 import CompleteTheLook from '../../components/product/CompleteTheLook';
+import HowToWearIt from '../../components/product/HowToWearIt';
 import ReviewsSection from '../../components/product/ReviewsSection';
 import RelatedProducts from '../../components/product/RelatedProducts';
 
@@ -293,6 +294,8 @@ export default function ProductDetails({ detail }) {
           </div>
         </div>
       </div>
+
+      <HowToWearIt mood={detail.wearMood} occasions={detail.wearOccasions} styleWith={detail.wearStyleWith} />
 
       <CompleteTheLook productId={id} />
 

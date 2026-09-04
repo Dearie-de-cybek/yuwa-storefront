@@ -5,6 +5,8 @@ import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import OccasionEdit from '@/components/home/OccasionEdit';
+import FabricEdit from '@/components/home/FabricEdit';
+import SeenOnYou from '@/components/home/SeenOnYou';
 
 // --- LUXURY ANIMATION CONFIG ---
 const luxuryEase = [0.16, 1, 0.3, 1];
@@ -46,7 +48,7 @@ const sliderVariants = {
   }
 };
 
-export default function HomePage({ featured = [], occasionSummary = {}, story }) {
+export default function HomePage({ featured = [], occasionSummary = {}, story, communityPosts = [] }) {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
   
@@ -257,6 +259,11 @@ export default function HomePage({ featured = [], occasionSummary = {}, story })
       <OccasionEdit summary={occasionSummary} />
 
       {/* =========================================
+          5b-2. THE FABRIC EDIT
+      ========================================= */}
+      <FabricEdit />
+
+      {/* =========================================
           5c. FIND YOUR SIGNATURE — quiz entry point
       ========================================= */}
       <motion.section
@@ -318,6 +325,11 @@ export default function HomePage({ featured = [], occasionSummary = {}, story })
           </Link>
         </motion.div>
       </section>
+
+      {/* =========================================
+          7. SEEN ON YOU — community
+      ========================================= */}
+      <SeenOnYou posts={communityPosts} />
 
       <style dangerouslySetInnerHTML={{__html: `
         .hide-scrollbar::-webkit-scrollbar { display: none; }

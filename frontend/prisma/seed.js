@@ -23,6 +23,23 @@ const PRODUCTS = [
 const SIZES = ['S', 'M', 'L'];
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
+// "How to Wear It" styling guidance, keyed by product `n`. Kept separate
+// from PRODUCTS so that array stays readable.
+const WEAR_IT = {
+  1:  { mood: 'Effortless. Elegant. Understated.', occasions: ['Everyday luxury', 'Weekend brunch', 'Date night'], styleWith: ['Gold hoop earrings', 'Minimal leather sandals', 'A woven tote'] },
+  2:  { mood: 'City-chic. Confident. Fast-paced.', occasions: ['Office to evening', 'Lagos city days', 'Casual dinners'], styleWith: ['Block heels', 'A structured bag', 'Layered gold necklaces'] },
+  3:  { mood: 'Regal. Ceremonial. Unforgettable.', occasions: ['Weddings', 'Traditional celebrations', 'Engagement ceremonies'], styleWith: ['Statement gele', 'Coral bead jewellery', 'Embellished clutch'] },
+  4:  { mood: 'Clean. Modern. Quietly confident.', occasions: ['Work', 'Daytime events', 'Coffee dates'], styleWith: ['Delicate gold jewellery', 'Nude flats', 'A slim belt'] },
+  5:  { mood: 'Bold. Sharp. Unapologetic.', occasions: ['Prom', 'Cocktail parties', 'Evening events'], styleWith: ['Statement earrings', 'A sleek clutch', 'Strappy heels'] },
+  6:  { mood: 'Flowing. Ceremonial. Deeply elegant.', occasions: ['Weddings', 'Traditional celebrations', 'Milestone events'], styleWith: ['Gold statement earrings', 'A beaded headwrap', 'Nude heels'] },
+  7:  { mood: 'Relaxed. Breezy. Effortless.', occasions: ['Vacation', 'Garden parties', 'Sunday brunch'], styleWith: ['Straw accessories', 'Simple gold jewellery', 'Flat sandals'] },
+  8:  { mood: 'Dramatic. Rich. Commanding.', occasions: ['Dinner', 'Evening events', 'Special occasions'], styleWith: ['Bold cuff bracelet', 'A structured clutch', 'Block heels'] },
+  9:  { mood: 'Refined. Warm. Quietly striking.', occasions: ['Dinner', 'Date night', 'Cocktail hour'], styleWith: ['Drop earrings', 'A mini clutch', 'Strappy sandals'] },
+  10: { mood: 'Statement. Grounded. Timeless.', occasions: ['Traditional celebrations', 'Family gatherings', 'Special occasions'], styleWith: ['Layered beads', 'A geled headwrap', 'Block heels'] },
+  11: { mood: 'Bold. Ceremonial. Full of presence.', occasions: ['Weddings', 'Traditional celebrations', 'Aso-ebi occasions'], styleWith: ['Coordinating gele', 'Gold jewellery set', 'Embellished sandals'] },
+  12: { mood: 'Dramatic. Radiant. Made for the spotlight.', occasions: ['Prom', 'Galas', 'Evening celebrations'], styleWith: ['Statement earrings', 'A metallic clutch', 'Strappy heels'] },
+};
+
 // Accessories powering "Complete The Look". Single "One Size" variant each —
 // real accessory sizing (ring sizes, shoe sizes) is out of scope for the demo
 // capsule, but the schema (Variant + LookItem.slot) is ready for it.
@@ -153,6 +170,9 @@ async function main() {
         occasion: p.occ,
         mood: p.mood,
         silhouette: p.sil,
+        wearMood: WEAR_IT[p.n]?.mood || null,
+        wearOccasions: WEAR_IT[p.n]?.occasions || [],
+        wearStyleWith: WEAR_IT[p.n]?.styleWith || [],
         material: p.material,
         categoryId,
         createdById: admin.id,

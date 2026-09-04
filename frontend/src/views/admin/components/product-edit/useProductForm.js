@@ -33,6 +33,9 @@ export default function useProductForm(productId) {
     contentSections: [],
     variants: [],
     tags: [],
+    wearMood: '',
+    wearOccasions: [],
+    wearStyleWith: [],
   });
 
   // ── Axios instance ──
@@ -63,6 +66,9 @@ export default function useProductForm(productId) {
           contentSections: data.contentSections || [],
           variants: data.variants || [],
           tags: data.tags?.map((t) => t.name) || [],
+          wearMood: data.wearMood || '',
+          wearOccasions: data.wearOccasions || [],
+          wearStyleWith: data.wearStyleWith || [],
         });
       } catch (err) {
         toast.error('Could not load product');
@@ -102,6 +108,9 @@ export default function useProductForm(productId) {
         featured: form.featured,
         metaTitle: form.metaTitle || null,
         metaDescription: form.metaDescription || null,
+        wearMood: form.wearMood || null,
+        wearOccasions: form.wearOccasions.filter(Boolean),
+        wearStyleWith: form.wearStyleWith.filter(Boolean),
         media: form.media.map((m, i) => ({
           url: m.url,
           altText: m.altText || null,

@@ -8,6 +8,7 @@ import GeneralTab from './components/product-edit/GeneralTab';
 import MediaTab from './components/product-edit/MediaTab';
 import VariantsTab from './components/product-edit/VariantsTab';
 import ContentTab from './components/product-edit/ContentTab';
+import StylingTab from './components/product-edit/StylingTab';
 import SeoTagsTab from './components/product-edit/SeoTagsTab';
 import { ArrowLeft, Save, Eye, EyeOff, Loader2 } from 'lucide-react';
 
@@ -16,6 +17,7 @@ const TABS = [
   { key: 'media',    label: 'Media' },
   { key: 'variants', label: 'Variants' },
   { key: 'content',  label: 'Content' },
+  { key: 'styling',  label: 'Styling' },
   { key: 'seo',      label: 'SEO & Tags' },
 ];
 
@@ -82,6 +84,7 @@ export default function ProductEditPage() {
         {activeTab === 'media'    && <MediaTab media={form.media} updateField={updateField} />}
         {activeTab === 'variants' && <VariantsTab variants={form.variants} updateField={updateField} />}
         {activeTab === 'content'  && <ContentTab contentSections={form.contentSections} updateField={updateField} />}
+        {activeTab === 'styling'  && <StylingTab form={form} updateField={updateField} />}
         {activeTab === 'seo'      && <SeoTagsTab form={form} handleChange={handleChange} updateField={updateField} />}
       </form>
 

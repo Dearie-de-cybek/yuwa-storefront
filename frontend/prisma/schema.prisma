@@ -69,6 +69,12 @@ model Product {
   mood       Mood?
   silhouette Silhouette?
 
+  // "How to Wear It" — styling guidance shown on the PDP. All optional;
+  // the section simply doesn't render when empty (no fake content).
+  wearMood       String?  @db.Text // e.g. "Effortless. Regal. Dramatic."
+  wearOccasions  String[] @default([]) // e.g. ["Weddings", "Traditional celebrations"]
+  wearStyleWith  String[] @default([]) // e.g. ["Gold jewellery", "Minimal clutch"]
+
   // Soft delete
   isDeleted Boolean  @default(false)
   deletedAt DateTime?
@@ -102,6 +108,7 @@ model Product {
   regionalPrices    RegionalPrice[]
   promotionProducts PromotionProduct[]
   lookItems         LookItem[]
+  communityPosts    CommunityPost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -875,4 +882,30 @@ enum LookSlot {
   JEWELLERY
   SHOES
   OTHER
+}
+
+// ============================================================
+// 25. COMMUNITY POSTS — "Seen On You" real customer photos
+// ============================================================
+// Admin-uploaded only — never seeded with fake photos. The homepage
+// section shows real posts when they exist, or an honest invite-to-tag
+// state when the list is empty.
+// ============================================================
+
+model CommunityPost {
+  id       String  @id @default(uuid())
+  imageUrl String
+  city     String // e.g. "Sydney", "Melbourne", "Brisbane", "Perth"
+  handle   String? // e.g. "@customer_handle"
+  caption  String?
+  isActive Boolean @default(true)
+  position Int     @default(0)
+
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productId String?
+
+  createdAt DateTime @default(now())
+
+  @@index([isActive])
+  @@index([productId])
 }

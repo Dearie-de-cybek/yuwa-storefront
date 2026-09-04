@@ -333,6 +333,11 @@ const _formatProductDetail = (product) => ({
   metaTitle: product.metaTitle,
   metaDescription: product.metaDescription,
   category: product.category,
+  // "How to Wear It" styling guidance — null/empty when unset, PDP hides
+  // the section rather than showing empty content.
+  wearMood: product.wearMood,
+  wearOccasions: product.wearOccasions,
+  wearStyleWith: product.wearStyleWith,
   media: product.media.map((m) => ({
     id: m.id, url: m.url, altText: m.altText, type: m.type, position: m.position,
   })),
@@ -464,6 +469,7 @@ const update = async (productId, data, adminId) => {
   const {
     name, price, compareAt, description, material, category,
     status, featured, metaTitle, metaDescription,
+    wearMood, wearOccasions, wearStyleWith,
     media, contentSections, variants, tags,
   } = data;
 
@@ -499,6 +505,9 @@ const update = async (productId, data, adminId) => {
     if (featured !== undefined)        updateData.featured = featured;
     if (metaTitle !== undefined)       updateData.metaTitle = metaTitle;
     if (metaDescription !== undefined) updateData.metaDescription = metaDescription;
+    if (wearMood !== undefined)        updateData.wearMood = wearMood || null;
+    if (wearOccasions !== undefined)   updateData.wearOccasions = wearOccasions;
+    if (wearStyleWith !== undefined)   updateData.wearStyleWith = wearStyleWith;
     updateData.categoryId = categoryId;
 
     await tx.product.update({ where: { id: productId }, data: updateData });
