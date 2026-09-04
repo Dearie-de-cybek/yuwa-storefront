@@ -9,7 +9,6 @@ import { toast } from 'sonner';
 
 // Components
 import SizeGuideModal from '../../components/product/SizeGuideModal';
-import CompleteTheLook from '../../components/product/CompleteTheLook';
 import HowToWearIt from '../../components/product/HowToWearIt';
 import ReviewsSection from '../../components/product/ReviewsSection';
 import RelatedProducts from '../../components/product/RelatedProducts';
@@ -138,32 +137,25 @@ export default function ProductDetails({ detail }) {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 max-w-[1440px] mx-auto px-6 mb-20">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:gap-12 max-w-[1600px] mx-auto px-6 mb-20">
 
-        {/* LEFT: GALLERY */}
-        <div className="flex flex-col gap-4">
-          <div className="w-full aspect-[3/4] bg-gray-50 overflow-hidden">
-            <AnimatePresence mode="wait">
-              <motion.img
-                key={selectedColor?.name || 'default'}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-                src={selectedColor?.images[0]}
-                className="w-full h-full object-cover"
-                alt={product.name}
-              />
-            </AnimatePresence>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            {selectedColor?.images.slice(1).map((img, idx) => (
-              <div key={idx} className="aspect-[3/4] bg-gray-50 overflow-hidden">
-                <img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-out" alt={`${product.name} detail`} />
+        {/* LEFT: GALLERY — big, flush (no gap), two per row (front + back) */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={selectedColor?.name || 'default'}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4 }}
+            className="grid grid-cols-2 gap-0 content-start"
+          >
+            {selectedColor?.images.map((img, idx) => (
+              <div key={idx} className="aspect-[3/5] bg-gray-50 overflow-hidden">
+                <img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-1000 ease-out" alt={`${product.name} view ${idx + 1}`} />
               </div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </AnimatePresence>
 
         {/* RIGHT: DETAILS */}
         <div className="lg:sticky lg:top-32 h-fit space-y-8">
@@ -292,12 +284,10 @@ export default function ProductDetails({ detail }) {
               </div>
             ))}
           </div>
+
+          <HowToWearIt productId={id} styleWith={detail.wearStyleWith} />
         </div>
       </div>
-
-      <HowToWearIt mood={detail.wearMood} occasions={detail.wearOccasions} styleWith={detail.wearStyleWith} />
-
-      <CompleteTheLook productId={id} />
 
       <div ref={reviewsRef}>
         <ReviewsSection productId={id} />

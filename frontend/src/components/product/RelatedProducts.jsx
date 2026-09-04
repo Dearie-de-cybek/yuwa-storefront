@@ -63,7 +63,7 @@ export default function RelatedProducts({ currentId, category }) {
 
   return (
     <section className="py-20 px-6 max-w-360 mx-auto border-t border-border">
-      <h3 className="font-serif text-3xl mb-12 text-center">Complete The Look</h3>
+      <h3 className="font-serif text-3xl mb-12 text-center">You May Also Like</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />

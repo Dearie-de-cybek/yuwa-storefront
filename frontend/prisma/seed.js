@@ -87,14 +87,11 @@ const ACCESSORIES = [
   },
 ];
 
-// Look capsules: pair one dress (by its PRODUCTS index, 1-based `n`) with the
-// full accessories set. Same accessory products reused across looks — a
-// small real-world capsule, not a bespoke set per dress.
-const LOOKS = [
-  { dressN: 1, name: 'The Zaria Look' },
-  { dressN: 3, name: 'The Aso-Oke Wedding Look' },
-  { dressN: 12, name: 'The Eko Sunset Look' },
-];
+// Look capsules: pair every dress with the full accessories set so "Wear It
+// With" has real shoppable products on every product page. Same accessory
+// products reused across looks — a small real-world capsule, not a bespoke
+// set per dress.
+const LOOKS = PRODUCTS.map((p) => ({ dressN: p.n, name: `The ${p.name} Look` }));
 
 async function main() {
   console.log('🌱 Starting seeder...');
