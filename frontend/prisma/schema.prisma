@@ -61,6 +61,9 @@ model Product {
   status   ProductStatus @default(DRAFT)
   featured Boolean       @default(false)
 
+  // Shop-by-occasion grouping
+  occasion Occasion?
+
   // Soft delete
   isDeleted Boolean  @default(false)
   deletedAt DateTime?
@@ -102,12 +105,20 @@ model Product {
   @@index([slug])
   @@index([featured])
   @@index([isDeleted])
+  @@index([occasion])
 }
 
 enum ProductStatus {
   DRAFT
   ACTIVE
   ARCHIVED
+}
+
+enum Occasion {
+  WEDDING
+  PROM
+  DINNER
+  EVERYDAY
 }
 
 // ============================================================
@@ -744,4 +755,18 @@ model StoreSetting {
   currency     String   @default("NGN")
   supportEmail String   @default("help@yuwa.com")
   updatedAt    DateTime @updatedAt
+}
+
+// ============================================================
+// 22. WAITLIST — Email capture for not-yet-launched occasions
+// ============================================================
+
+model WaitlistEntry {
+  id        String   @id @default(uuid())
+  email     String
+  occasion  Occasion
+  createdAt DateTime @default(now())
+
+  @@unique([email, occasion])
+  @@index([occasion])
 }

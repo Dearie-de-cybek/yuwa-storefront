@@ -366,7 +366,7 @@ const _formatProductDetail = (product) => ({
  * Fetch paginated, filtered list of products.
  * @returns {{ products: Array, pagination: Object }}
  */
-const findAll = async ({ page = 1, limit = 20, status, category, search, featured, sort = 'newest' }) => {
+const findAll = async ({ page = 1, limit = 20, status, category, search, featured, occasion, sort = 'newest' }) => {
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const take = parseInt(limit);
 
@@ -374,6 +374,7 @@ const findAll = async ({ page = 1, limit = 20, status, category, search, feature
 
   if (status)             where.status = status;
   if (category)           where.category = { slug: category };
+  if (occasion)           where.occasion = occasion;
   if (featured === 'true') where.featured = true;
   if (search) {
     where.OR = [
@@ -624,6 +625,31 @@ const changeStatus = async (productId, newStatus, adminId) => {
   return { success: true, status: newStatus };
 };
 
+/**
+ * For each given Occasion value, return the live product count and a hero
+ * image (featured product preferred, else newest). Powers "The Occasion
+ * Edit" — an occasion with zero active products renders as locked/coming-soon
+ * instead of linking to an empty shop page.
+ */
+const occasionSummary = async (occasionValues) => {
+  const entries = await Promise.all(
+    occasionValues.map(async (occasion) => {
+      const where = { isDeleted: false, status: 'ACTIVE', occasion };
+      const [count, product] = await Promise.all([
+        prisma.product.count({ where }),
+        prisma.product.findFirst({
+          where,
+          include: { media: { where: { position: 0 }, take: 1 } },
+          orderBy: [{ featured: 'desc' }, { createdAt: 'desc' }],
+        }),
+      ]);
+      return [occasion, { count, image: product?.media[0]?.url || null }];
+    })
+  );
+
+  return Object.fromEntries(entries);
+};
+
 
 export {
   findAll,
@@ -633,4 +659,5 @@ export {
   softDelete,
   restore,
   changeStatus,
+  occasionSummary,
 };

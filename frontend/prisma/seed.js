@@ -1,17 +1,36 @@
 const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
-const slugify = require('slugify');
 
 const prisma = new PrismaClient();
 
-async function main() {
-  console.log('🌱 Starting Enterprise Seeder...');
+// 12 products mapped to /public/models/1.jpg .. 12.jpg
+const PRODUCTS = [
+  { n: 1,  name: 'The Zaria Silk Bubu',     cat: 'luxury', price: 180000, compareAt: null,   material: '100% Adire Silk',   featured: true,  occ: 'EVERYDAY', colors: ['Emerald', 'Clay'] },
+  { n: 2,  name: 'Lagos City Midi',         cat: 'rtw',    price: 120000, compareAt: 150000, material: 'Ankara Cotton',     featured: false, occ: 'EVERYDAY', colors: ['Indigo', 'Coral'] },
+  { n: 3,  name: 'Aso-Oke Empire Gown',     cat: 'luxury', price: 320000, compareAt: null,   material: 'Woven Aso-Oke',     featured: true,  occ: 'WEDDING',  colors: ['Gold', 'Burgundy'] },
+  { n: 4,  name: 'Adire Wrap Dress',        cat: 'rtw',    price: 95000,  compareAt: null,   material: 'Hand-Dyed Adire',   featured: true,  occ: 'EVERYDAY', colors: ['Indigo', 'Ivory'] },
+  { n: 5,  name: 'Ankara Power Suit',       cat: 'rtw',    price: 145000, compareAt: null,   material: 'Wax Print Cotton',  featured: false, occ: 'PROM',     colors: ['Royal Blue', 'Black'] },
+  { n: 6,  name: 'Ijele Ceremonial Bubu',   cat: 'luxury', price: 275000, compareAt: 300000, material: 'Silk Chiffon',      featured: true,  occ: 'WEDDING',  colors: ['Plum', 'Champagne'] },
+  { n: 7,  name: 'Sahara Linen Co-ord',     cat: 'rtw',    price: 110000, compareAt: null,   material: 'Pure Linen',        featured: false, occ: 'EVERYDAY', colors: ['Champagne', 'Teal'] },
+  { n: 8,  name: 'Benin Bronze Kaftan',     cat: 'luxury', price: 210000, compareAt: null,   material: 'Brocade Silk',      featured: false, occ: 'DINNER',   colors: ['Gold', 'Black'] },
+  { n: 9,  name: 'Nok Terracotta Maxi',     cat: 'rtw',    price: 130000, compareAt: null,   material: 'Crepe',             featured: true,  occ: 'DINNER',   colors: ['Coral', 'Clay'] },
+  { n: 10, name: 'Kano Indigo Boubou',      cat: 'luxury', price: 240000, compareAt: null,   material: 'Adire Silk',        featured: false, occ: 'EVERYDAY', colors: ['Indigo', 'White'] },
+  { n: 11, name: 'Yoruba Gele Set',         cat: 'rtw',    price: 105000, compareAt: 135000, material: 'Aso-Oke Blend',     featured: false, occ: 'WEDDING',  colors: ['Burgundy', 'Gold'] },
+  { n: 12, name: 'Eko Sunset Gown',         cat: 'luxury', price: 298000, compareAt: null,   material: 'Silk Satin',        featured: true,  occ: 'PROM',     colors: ['Coral', 'Plum'] },
+];
 
-  // ============================================================
-  // 1. CLEANUP (Order matters due to Foreign Keys!)
-  // ============================================================
+const SIZES = ['S', 'M', 'L'];
+const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+async function main() {
+  console.log('🌱 Starting seeder...');
+
+  // 1. CLEANUP (respect FK order)
   console.log('🧹 Clearing old data...');
   await prisma.orderItem.deleteMany();
+  await prisma.orderNote.deleteMany().catch(() => {});
+  await prisma.order.deleteMany().catch(() => {});
+  await prisma.promotionUsage.deleteMany().catch(() => {});
   await prisma.review.deleteMany();
   await prisma.cartItem.deleteMany();
   await prisma.inventoryLog.deleteMany();
@@ -23,127 +42,77 @@ async function main() {
   await prisma.category.deleteMany();
   await prisma.user.deleteMany();
 
-  // ============================================================
-  // 2. CREATE USERS
-  // ============================================================
-  console.log('👤 Creating Users...');
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash("password123", salt); 
+  // 2. USERS
+  console.log('👤 Creating users...');
+  const hashedPassword = await bcrypt.hash('password123', await bcrypt.genSalt(10));
 
   const admin = await prisma.user.create({
-    data: {
-      firstName: "Daro",
-      lastName: "Admin",
-      email: "admin@yuwa.com",
-      password: hashedPassword,
-      role: "ADMIN"
-    }
+    data: { firstName: 'Daro', lastName: 'Admin', email: 'admin@yuwa.com', password: hashedPassword, role: 'ADMIN' },
+  });
+  await prisma.user.create({
+    data: { firstName: 'Amaka', lastName: 'Shopper', email: 'customer@yuwa.com', password: hashedPassword, role: 'CUSTOMER' },
   });
 
-  const customer = await prisma.user.create({
-    data: {
-      firstName: "Amaka",
-      lastName: "Shopper",
-      email: "customer@yuwa.com",
-      password: hashedPassword,
-      role: "CUSTOMER"
-    }
-  });
-
-  // ============================================================
-  // 3. CREATE CATEGORIES (Required for Products)
-  // ============================================================
-  console.log('📂 Creating Categories...');
-  
+  // 3. CATEGORIES
+  console.log('📂 Creating categories...');
   const catLuxury = await prisma.category.create({
-    data: {
-      name: "Luxury Bubu",
-      slug: "luxury-bubu",
-      description: "Flowing elegance for the modern woman."
-    }
+    data: { name: 'Luxury Bubu', slug: 'luxury-bubu', description: 'Flowing elegance for the modern woman.' },
   });
-
   const catRtw = await prisma.category.create({
-    data: {
-      name: "Ready-to-Wear",
-      slug: "ready-to-wear",
-      description: "Chic styles for everyday Lagos living."
-    }
+    data: { name: 'Ready-to-Wear', slug: 'ready-to-wear', description: 'Chic styles for everyday Lagos living.' },
   });
 
-  // ============================================================
-  // 4. CREATE PRODUCTS (With Media, Variants & Sections)
-  // ============================================================
-  console.log('👗 Creating Products...');
+  // 4. PRODUCTS (photos from /public/models)
+  console.log('👗 Creating products from model photos...');
+  for (const p of PRODUCTS) {
+    const categoryId = p.cat === 'luxury' ? catLuxury.id : catRtw.id;
+    const heroImg = `/models/${p.n}.jpg`;
+    const secondImg = `/models/${(p.n % 12) + 1}.jpg`;
 
-  // --- PRODUCT 1: ZARIA SILK BUBU ---
-  await prisma.product.create({
-    data: {
-      name: "The Zaria Silk Bubu",
-      slug: "the-zaria-silk-bubu",
-      description: "Hand-dyed Adire silk that flows like water. Designed for the modern woman who values comfort and class.",
-      price: 180000.00,
-      status: "ACTIVE",
-      featured: true,
-      material: "100% Adire Silk",
-      categoryId: catLuxury.id, // Connect to Category
-      createdById: admin.id,    // Connect to Admin (Audit)
+    const variants = [];
+    p.colors.forEach((color, ci) => {
+      SIZES.forEach((size, si) => {
+        variants.push({
+          color,
+          size,
+          stock: 5 + ci * 3 + si * 2,
+          sku: `YUWA-${p.n}-${color.slice(0, 3).toUpperCase()}-${size}`,
+        });
+      });
+    });
 
-      // A. Media (Images)
-      media: {
-        create: [
-          { url: "https://images.unsplash.com/photo-1585487000160-6ebcfceb0d03?q=80&w=1000", position: 0, altText: "Front View" },
-          { url: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=1000", position: 1, altText: "Back View" }
-        ]
+    await prisma.product.create({
+      data: {
+        name: p.name,
+        slug: `${slugify(p.name)}-${p.n}`,
+        description: `${p.name} — crafted from ${p.material.toLowerCase()}. A YUWA signature piece designed for the woman who carries her heritage with quiet confidence.`,
+        price: p.price,
+        compareAt: p.compareAt,
+        status: 'ACTIVE',
+        featured: p.featured,
+        occasion: p.occ,
+        material: p.material,
+        categoryId,
+        createdById: admin.id,
+        media: {
+          create: [
+            { url: heroImg, position: 0, altText: `${p.name} front` },
+            { url: secondImg, position: 1, altText: `${p.name} detail` },
+          ],
+        },
+        variants: { create: variants },
+        contentSections: {
+          create: [
+            { type: 'DETAILS', title: 'Product Details', content: `Material: ${p.material}.\nHandmade in Lagos.\nHidden side pockets.` },
+            { type: 'FABRIC_CARE', title: 'Fabric & Care', content: 'Dry clean only.\nDo not bleach.\nIron on low heat.' },
+            { type: 'SHIPPING_RETURNS', title: 'Shipping & Returns', content: 'Free express shipping over ₦250,000.\nReturns accepted within 14 days.' },
+          ],
+        },
       },
+    });
+  }
 
-      // B. Variants (SKU is required now!)
-      variants: {
-        create: [
-          { color: "Emerald", size: "S", stock: 10, sku: "ZARIA-EM-S" },
-          { color: "Emerald", size: "M", stock: 15, sku: "ZARIA-EM-M" },
-          { color: "Clay", size: "M", stock: 8, sku: "ZARIA-CL-M" }
-        ]
-      },
-
-      // C. Content Sections (Accordions)
-      contentSections: {
-        create: [
-          { type: "FABRIC_CARE", title: "Fabric Care", content: "Dry clean only.\nDo not bleach.\nIron on low heat." },
-          { type: "DETAILS", title: "Product Details", content: "Floor length: 60 inches.\nHidden side pockets.\nHandmade in Lagos." }
-        ]
-      }
-    }
-  });
-
-  // --- PRODUCT 2: LAGOS CITY MIDI ---
-  await prisma.product.create({
-    data: {
-      name: "Lagos City Midi",
-      slug: "lagos-city-midi",
-      description: "A versatile piece for the bustle of Lagos and the chic of London.",
-      price: 120000.00,
-      status: "ACTIVE",
-      categoryId: catRtw.id,
-      createdById: admin.id,
-
-      media: {
-        create: [
-          { url: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1000", position: 0 }
-        ]
-      },
-
-      variants: {
-        create: [
-          { color: "Ankara Print", size: "S", stock: 20, sku: "LAGOS-ANK-S" },
-          { color: "Ankara Print", size: "M", stock: 20, sku: "LAGOS-ANK-M" },
-          { color: "Noir", size: "M", stock: 10, sku: "LAGOS-BLK-M" }
-        ]
-      }
-    }
-  });
-
-  console.log('✅ Seeding Finished! Database is ready.');
+  console.log(`✅ Seeded ${PRODUCTS.length} products, 2 users, 2 categories.`);
 }
 
 main()

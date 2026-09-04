@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import OccasionEdit from '@/components/home/OccasionEdit';
 
 // --- LUXURY ANIMATION CONFIG ---
 const luxuryEase = [0.16, 1, 0.3, 1];
@@ -45,7 +46,7 @@ const sliderVariants = {
   }
 };
 
-export default function HomePage({ featured = [] }) {
+export default function HomePage({ featured = [], occasionSummary = {} }) {
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
   
@@ -64,7 +65,7 @@ export default function HomePage({ featured = [] }) {
 
   // Two showcase cards: real featured products, or editorial fallback.
   const showcase = featured.length
-    ? featured.slice(0, 2).map((p) => ({
+    ? featured.slice(0, 6).map((p) => ({
         id: p.id,
         href: `/product/${p.id}`,
         image: p.image,
@@ -234,7 +235,7 @@ export default function HomePage({ featured = [] }) {
 
         <div className="flex overflow-x-auto hide-scrollbar gap-12 md:gap-24 px-6 md:px-12 pb-12 snap-x">
           {showcase.map((item, i) => (
-            <div key={item.id} className={`min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group ${i === 1 ? 'mt-12 md:mt-24' : ''}`}>
+            <div key={item.id} className={`min-w-[85vw] md:min-w-[40vw] flex flex-col snap-center group ${i % 2 === 1 ? 'mt-12 md:mt-24' : ''}`}>
               <Link href={item.href} className="overflow-hidden bg-[#EAE8E3] aspect-[3/4] mb-6">
                 <img src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s] ease-out" alt={item.name} />
               </Link>
@@ -249,6 +250,11 @@ export default function HomePage({ featured = [] }) {
           ))}
         </div>
       </section>
+
+      {/* =========================================
+          5b. THE OCCASION EDIT
+      ========================================= */}
+      <OccasionEdit summary={occasionSummary} />
 
       {/* =========================================
           6. CULTURAL ANCHOR
