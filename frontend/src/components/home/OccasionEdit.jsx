@@ -96,10 +96,16 @@ export default function OccasionEdit({ summary = {} }) {
         whileInView="visible"
         viewport={{ once: true, margin: '-100px' }}
         variants={fadeUp}
-        className="max-w-[1600px] mx-auto text-center mb-16 md:mb-20"
+        className="max-w-[1600px] mx-auto mb-16 md:mb-20 text-center relative"
       >
         <span className="block text-[10px] tracking-[0.3em] uppercase mb-4 text-[#B8860B]">The Edit</span>
         <h2 className="font-serif text-4xl md:text-6xl text-[#FBF9F5]">The Occasion Edit</h2>
+        <Link
+          href="/occasion"
+          className="hidden md:inline-block absolute right-0 bottom-2 text-[10px] uppercase tracking-[0.3em] font-bold text-white/70 border-b border-white/30 pb-1 hover:text-accent hover:border-accent transition-colors"
+        >
+          View All Occasions
+        </Link>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-[1600px] mx-auto">
