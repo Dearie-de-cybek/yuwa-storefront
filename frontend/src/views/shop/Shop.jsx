@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // --- FILTER CONFIGURATION ---
 const AVAILABLE_FILTERS = {
-  categories: ["Luxury Bubu", "Ready-to-Wear", "Co-ords", "Uncategorized"],
+  categories: ["Luxury Bubu", "Ready-to-Wear", "Co-ords", "Headwraps", "Bags", "Jewellery", "Shoes", "Uncategorized"],
   sizes: ["XS", "S", "M", "L", "XL", "XXL", "3XL", "One Size", "Custom"],
   fabrics: ["Silk", "Cotton", "Adire", "Chiffon", "Aso-Oke"],
   colors: [

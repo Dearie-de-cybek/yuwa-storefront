@@ -22,11 +22,69 @@ const PRODUCTS = [
 const SIZES = ['S', 'M', 'L'];
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
+// Accessories powering "Complete The Look". Single "One Size" variant each —
+// real accessory sizing (ring sizes, shoe sizes) is out of scope for the demo
+// capsule, but the schema (Variant + LookItem.slot) is ready for it.
+// Images verified live on Unsplash before seeding.
+const ACCESSORIES = [
+  {
+    key: 'headwrap',
+    name: 'Beaded Gele Headwrap',
+    catName: 'Headwraps',
+    catSlug: 'headwraps',
+    price: 28000,
+    material: 'Hand-Beaded Aso-Oke',
+    image: 'https://images.unsplash.com/photo-1783038312854-f84ae9a0cc2f?q=80&w=1000',
+    slot: 'HEADWRAP',
+  },
+  {
+    key: 'bag',
+    name: 'Structured Clutch',
+    catName: 'Bags',
+    catSlug: 'bags',
+    price: 45000,
+    material: 'Vegan Leather',
+    image: 'https://images.unsplash.com/photo-1613482184847-44483b792eeb?q=80&w=1000',
+    slot: 'BAG',
+  },
+  {
+    key: 'jewellery',
+    name: 'Gold Statement Earrings',
+    catName: 'Jewellery',
+    catSlug: 'jewellery',
+    price: 22000,
+    material: '18k Gold Plated Brass',
+    image: 'https://images.unsplash.com/photo-1553926297-57bb350c4f08?q=80&w=1000',
+    slot: 'JEWELLERY',
+  },
+  {
+    key: 'shoes',
+    name: 'Nude Block Heels',
+    catName: 'Shoes',
+    catSlug: 'shoes',
+    price: 38000,
+    material: 'Satin',
+    image: 'https://images.unsplash.com/photo-1770150138451-c2b898d02c25?q=80&w=1000',
+    slot: 'SHOES',
+  },
+];
+
+// Look capsules: pair one dress (by its PRODUCTS index, 1-based `n`) with the
+// full accessories set. Same accessory products reused across looks — a
+// small real-world capsule, not a bespoke set per dress.
+const LOOKS = [
+  { dressN: 1, name: 'The Zaria Look' },
+  { dressN: 3, name: 'The Aso-Oke Wedding Look' },
+  { dressN: 12, name: 'The Eko Sunset Look' },
+];
+
 async function main() {
   console.log('🌱 Starting seeder...');
 
   // 1. CLEANUP (respect FK order)
   console.log('🧹 Clearing old data...');
+  await prisma.lookItem.deleteMany().catch(() => {});
+  await prisma.look.deleteMany().catch(() => {});
   await prisma.orderItem.deleteMany();
   await prisma.orderNote.deleteMany().catch(() => {});
   await prisma.order.deleteMany().catch(() => {});
@@ -64,6 +122,7 @@ async function main() {
 
   // 4. PRODUCTS (photos from /public/models)
   console.log('👗 Creating products from model photos...');
+  const productByN = {};
   for (const p of PRODUCTS) {
     const categoryId = p.cat === 'luxury' ? catLuxury.id : catRtw.id;
     const heroImg = `/models/${p.n}.jpg`;
@@ -81,7 +140,7 @@ async function main() {
       });
     });
 
-    await prisma.product.create({
+    const created = await prisma.product.create({
       data: {
         name: p.name,
         slug: `${slugify(p.name)}-${p.n}`,
@@ -110,9 +169,61 @@ async function main() {
         },
       },
     });
+    productByN[p.n] = created;
   }
 
-  console.log(`✅ Seeded ${PRODUCTS.length} products, 2 users, 2 categories.`);
+  // 5. ACCESSORIES — powers "Complete The Look". Each gets its own category
+  // (so the shop's category filter can also surface them) and a single
+  // "One Size" variant.
+  console.log('👜 Creating accessories...');
+  const accessoryProduct = {};
+  for (const a of ACCESSORIES) {
+    const cat = await prisma.category.create({
+      data: { name: a.catName, slug: a.catSlug, description: `${a.catName} to complete the look.` },
+    });
+
+    const product = await prisma.product.create({
+      data: {
+        name: a.name,
+        slug: `${slugify(a.name)}`,
+        description: `${a.name} — crafted from ${a.material.toLowerCase()}. Styled as part of the YUWA Complete The Look capsule.`,
+        price: a.price,
+        status: 'ACTIVE',
+        featured: false,
+        material: a.material,
+        categoryId: cat.id,
+        createdById: admin.id,
+        media: { create: [{ url: a.image, position: 0, altText: a.name }] },
+        variants: {
+          create: [{ color: 'Default', size: 'One Size', stock: 25, sku: `YUWA-ACC-${a.key.toUpperCase()}-OS` }],
+        },
+      },
+    });
+    accessoryProduct[a.key] = product;
+  }
+
+  // 6. LOOKS — pair each capsule dress with the full accessories set.
+  console.log('💫 Creating "Complete The Look" capsules...');
+  for (const l of LOOKS) {
+    const dress = productByN[l.dressN];
+    await prisma.look.create({
+      data: {
+        name: l.name,
+        slug: slugify(l.name),
+        items: {
+          create: [
+            { productId: dress.id, slot: 'DRESS', position: 0 },
+            { productId: accessoryProduct.headwrap.id, slot: 'HEADWRAP', position: 1 },
+            { productId: accessoryProduct.bag.id, slot: 'BAG', position: 2 },
+            { productId: accessoryProduct.jewellery.id, slot: 'JEWELLERY', position: 3 },
+            { productId: accessoryProduct.shoes.id, slot: 'SHOES', position: 4 },
+          ],
+        },
+      },
+    });
+  }
+
+  console.log(`✅ Seeded ${PRODUCTS.length} products, ${ACCESSORIES.length} accessories, ${LOOKS.length} looks, 2 users.`);
 }
 
 main()
