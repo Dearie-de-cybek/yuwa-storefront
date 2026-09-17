@@ -2,9 +2,9 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "yuwa-frontend",
+      "name": "yuwa-storefront",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend", "run", "dev"],
+      "runtimeArgs": ["run", "dev"],
       "autoPort": true,
       "port": 3000
     }
